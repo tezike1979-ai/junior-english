@@ -6,36 +6,34 @@
 <title>中学英単語帳</title>
 <link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg: #fff9f0;
-  --surface: #ffffff;
-  --surface2: #fff3e8;
-  --border: rgba(0,0,0,0.07);
-  --text: #2d2016;
-  --muted: #a89880;
-  --green: #22c55e;
-  --green-dim: #dcfce7;
-  --red: #ef4444;
-  --red-dim: #fee2e2;
-  --orange: #f97316;
-  --orange-dim: #fff7ed;
-  --pink: #ec4899;
-  --pink-dim: #fce7f3;
-  --purple: #8b5cf6;
-  --purple-dim: #ede9fe;
-  --blue: #3b82f6;
-  --blue-dim: #eff6ff;
-  --yellow: #eab308;
-  --yellow-dim: #fefce8;
-  --radius: 20px;
-  --shadow: 0 4px 0 rgba(0,0,0,0.1);
-  --shadow-sm: 0 2px 0 rgba(0,0,0,0.08);
+  --bg:       #0d1117;
+  --surface:  #161b27;
+  --surface2: #1e2535;
+  --surface3: #252e42;
+  --border:   rgba(99,179,237,0.12);
+  --border2:  rgba(99,179,237,0.22);
+  --text:     #e2e8f8;
+  --muted:    rgba(226,232,248,0.38);
+  --blue:     #63b3ed;
+  --blue-dim: rgba(99,179,237,0.10);
+  --cyan:     #67e8f9;
+  --cyan-dim: rgba(103,232,249,0.10);
+  --green:    #4ade80;
+  --green-dim:rgba(74,222,128,0.10);
+  --red:      #f87171;
+  --red-dim:  rgba(248,113,113,0.10);
+  --purple:   #a78bfa;
+  --purple-dim:rgba(167,139,250,0.10);
+  --amber:    #fbbf24;
+  --radius:   16px;
+  --glow:     0 0 20px rgba(99,179,237,0.15);
 }
 body {
-  font-family: 'Nunito', sans-serif;
+  font-family: 'Outfit', sans-serif;
   background: var(--bg);
   color: var(--text);
   height: 100dvh;
@@ -43,296 +41,347 @@ body {
   overflow: hidden;
   -webkit-tap-highlight-color: transparent;
 }
-.screen { display: none; flex-direction: column; height: 100dvh; }
+
+/* グリッド背景 */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(99,179,237,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99,179,237,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.screen { display: none; flex-direction: column; height: 100dvh; position: relative; z-index: 1; }
 .screen.active { display: flex; }
 
-/* ══ 背景デコレーション ══ */
-.bg-deco {
-  position: fixed; inset: 0; pointer-events: none; z-index: 0;
-  overflow: hidden;
-}
-.bg-deco::before {
-  content: '';
-  position: absolute;
-  width: 300px; height: 300px;
-  background: radial-gradient(circle, #fde68a44 0%, transparent 70%);
-  top: -80px; right: -80px; border-radius: 50%;
-}
-.bg-deco::after {
-  content: '';
-  position: absolute;
-  width: 250px; height: 250px;
-  background: radial-gradient(circle, #fbcfe844 0%, transparent 70%);
-  bottom: -60px; left: -60px; border-radius: 50%;
-}
-
 /* ══ MENU ══ */
-.menu-header {
-  padding: 48px 20px 4px;
-  flex-shrink: 0; position: relative; z-index: 1;
-  display: flex; align-items: flex-end; gap: 12px;
-}
-.header-cat { font-size: 52px; line-height: 1; flex-shrink: 0; animation: catBob 2s ease-in-out infinite; }
-@keyframes catBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
-.header-text {}
+.menu-header { padding: 48px 22px 6px; flex-shrink: 0; }
 .menu-title {
-  font-size: 24px; font-weight: 900; color: var(--text);
-  line-height: 1.1;
+  font-size: 26px; font-weight: 800; letter-spacing: -0.5px;
+  background: linear-gradient(135deg, var(--blue), var(--cyan));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
-.menu-sub { font-size: 12px; color: var(--muted); font-weight: 600; margin-top: 2px; }
+.menu-sub { font-size: 12px; color: var(--muted); font-weight: 500; margin-top: 3px; letter-spacing: 0.3px; }
 
 .menu-tabs {
   display: flex; gap: 6px;
-  padding: 10px 20px 0;
-  flex-shrink: 0; overflow-x: auto; scrollbar-width: none; z-index: 1; position: relative;
+  padding: 12px 22px 0;
+  flex-shrink: 0; overflow-x: auto; scrollbar-width: none;
 }
 .menu-tabs::-webkit-scrollbar { display: none; }
 .tab-btn {
   flex-shrink: 0;
-  border: 2.5px solid var(--border);
-  border-radius: 20px; padding: 6px 14px;
-  font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700;
+  border: 1px solid var(--border);
+  border-radius: 20px; padding: 7px 15px;
+  font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600;
   cursor: pointer; background: var(--surface); color: var(--muted);
-  transition: all 0.15s; box-shadow: var(--shadow-sm);
+  transition: all 0.2s; letter-spacing: 0.2px;
 }
-.tab-btn.active { background: var(--orange); color: #fff; border-color: var(--orange); box-shadow: 0 3px 0 #c2580a; }
+.tab-btn.active {
+  background: var(--blue-dim); color: var(--blue);
+  border-color: rgba(99,179,237,0.35);
+  box-shadow: 0 0 12px rgba(99,179,237,0.12);
+}
 
 .menu-body {
   flex: 1; overflow-y: auto;
-  padding: 10px 20px 32px;
+  padding: 12px 22px 32px;
   display: flex; flex-direction: column; gap: 10px;
-  position: relative; z-index: 1;
 }
 
 .menu-section-label {
-  font-size: 11px; font-weight: 800; text-transform: uppercase;
-  letter-spacing: 1.4px; color: var(--muted); margin: 6px 0 2px;
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.8px; color: var(--muted); margin: 8px 0 2px;
 }
+
 .menu-card {
   background: var(--surface);
-  border: 2.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 14px 16px; cursor: pointer;
-  display: flex; align-items: center; gap: 12px;
-  box-shadow: var(--shadow);
-  transition: transform 0.1s, box-shadow 0.1s;
+  padding: 15px 16px; cursor: pointer;
+  display: flex; align-items: center; gap: 14px;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
   -webkit-tap-highlight-color: transparent;
 }
-.menu-card:active { transform: translateY(3px); box-shadow: none; }
+.menu-card:active {
+  background: var(--surface2);
+  border-color: var(--border2);
+  box-shadow: var(--glow);
+}
 .menu-icon {
-  width: 46px; height: 46px; border-radius: 14px;
+  width: 44px; height: 44px; border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 22px; flex-shrink: 0; border: 2px solid rgba(0,0,0,0.06);
+  font-size: 20px; flex-shrink: 0;
+  border: 1px solid var(--border);
 }
-.ic-orange { background: #fff7ed; }
-.ic-green  { background: #f0fdf4; }
-.ic-yellow { background: #fefce8; }
-.ic-red    { background: #fff1f2; }
-.ic-purple { background: #faf5ff; }
-.ic-blue   { background: #eff6ff; }
-.ic-pink   { background: #fdf2f8; }
+.ic-blue   { background: var(--blue-dim); }
+.ic-cyan   { background: var(--cyan-dim); }
+.ic-green  { background: var(--green-dim); }
+.ic-red    { background: var(--red-dim); }
+.ic-purple { background: var(--purple-dim); }
+.ic-amber  { background: rgba(251,191,36,0.10); }
 .menu-text { flex: 1; }
-.menu-name { font-size: 15px; font-weight: 800; color: var(--text); margin-bottom: 1px; }
-.menu-desc { font-size: 12px; color: var(--muted); font-weight: 600; }
+.menu-name { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 2px; letter-spacing: 0.1px; }
+.menu-desc { font-size: 12px; color: var(--muted); font-weight: 500; }
 .menu-badge {
-  font-size: 12px; font-weight: 800;
+  font-size: 12px; font-weight: 700;
   background: var(--surface2); color: var(--muted);
-  border-radius: 10px; padding: 3px 9px;
-  border: 2px solid var(--border); flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px; padding: 3px 9px; flex-shrink: 0;
+  letter-spacing: 0.2px;
 }
-.menu-badge.red-b { color: var(--red); background: var(--red-dim); border-color: #fca5a5; }
+.menu-badge.red-b { color: var(--red); background: var(--red-dim); border-color: rgba(248,113,113,0.2); }
 
 /* 品詞グリッド */
 .pos-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
 .pos-card {
-  background: var(--surface); border: 2.5px solid var(--border);
-  border-radius: 16px; padding: 12px; cursor: pointer;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 13px 13px; cursor: pointer;
   display: flex; flex-direction: column; gap: 4px;
-  box-shadow: var(--shadow-sm); transition: transform 0.1s, box-shadow 0.1s;
+  transition: border-color 0.2s, box-shadow 0.2s;
   position: relative; overflow: hidden;
 }
-.pos-card:active { transform: translateY(2px); box-shadow: none; }
-.pos-card-name { font-size: 14px; font-weight: 800; color: var(--text); }
-.pos-card-en   { font-size: 11px; color: var(--muted); font-weight: 600; }
-.pos-card-count { font-size: 11px; color: var(--orange); font-weight: 700; }
-.pos-card-prog { position: absolute; bottom: 0; left: 0; height: 4px; background: var(--orange); opacity: 0.5; transition: width 0.6s ease; }
+.pos-card:active { border-color: var(--border2); box-shadow: var(--glow); }
+.pos-card-name { font-size: 14px; font-weight: 700; color: var(--text); }
+.pos-card-en   { font-size: 11px; color: var(--muted); font-weight: 500; }
+.pos-card-count { font-size: 11px; color: var(--blue); font-weight: 600; }
+.pos-card-prog {
+  position: absolute; bottom: 0; left: 0; height: 2px;
+  background: linear-gradient(90deg, var(--blue), var(--cyan));
+  transition: width 0.6s ease;
+}
 
 /* 進捗 */
 .pos-progress {
-  background: var(--surface); border: 2.5px solid var(--border);
-  border-radius: 16px; padding: 14px 16px; box-shadow: var(--shadow-sm);
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 16px;
 }
-.pos-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.pos-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 .pos-row:last-child { margin-bottom: 0; }
-.pos-label { font-size: 12px; font-weight: 800; color: var(--text); width: 48px; flex-shrink: 0; }
-.pos-bar-wrap { flex: 1; height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; border: 1.5px solid var(--border); }
-.pos-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--orange), var(--pink)); transition: width 0.6s ease; }
-.pos-count { font-size: 11px; color: var(--muted); font-weight: 700; width: 52px; text-align: right; flex-shrink: 0; }
+.pos-label { font-size: 12px; font-weight: 600; color: var(--text); width: 48px; flex-shrink: 0; }
+.pos-bar-wrap {
+  flex: 1; height: 6px;
+  background: var(--surface2); border-radius: 3px; overflow: hidden;
+}
+.pos-bar-fill {
+  height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, var(--blue), var(--cyan));
+  transition: width 0.6s ease;
+}
+.pos-count { font-size: 11px; color: var(--muted); font-weight: 600; width: 52px; text-align: right; flex-shrink: 0; }
 .stats-bar {
-  background: var(--surface); border: 2.5px solid var(--border);
-  border-radius: 16px; padding: 14px 16px;
-  display: flex; justify-content: space-around; box-shadow: var(--shadow-sm);
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 14px 16px;
+  display: flex; justify-content: space-around;
 }
 .sbar-item { text-align: center; }
-.sbar-num { font-size: 22px; font-weight: 900; }
+.sbar-num { font-size: 22px; font-weight: 800; }
 .sbar-num.g { color: var(--green); }
 .sbar-num.r { color: var(--red); }
-.sbar-num.a { color: var(--orange); }
-.sbar-label { font-size: 11px; color: var(--muted); font-weight: 700; margin-top: 2px; }
+.sbar-num.a { color: var(--blue); }
+.sbar-label { font-size: 11px; color: var(--muted); font-weight: 600; margin-top: 2px; }
 
 /* ══ STUDY ══ */
 .study-header {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 14px 18px 6px; flex-shrink: 0; position: relative; z-index: 1;
+  padding: 14px 18px 6px; flex-shrink: 0;
 }
 .back-btn {
-  font-size: 13px; font-weight: 800; color: var(--orange);
-  background: var(--orange-dim); border: 2px solid #fed7aa;
-  border-radius: 20px; padding: 6px 13px; cursor: pointer;
-  box-shadow: 0 2px 0 #fed7aa;
+  font-size: 13px; font-weight: 700; color: var(--blue);
+  background: var(--blue-dim); border: 1px solid rgba(99,179,237,0.25);
+  border-radius: 20px; padding: 6px 14px; cursor: pointer;
+  letter-spacing: 0.2px;
 }
 .session-badge {
-  font-size: 12px; font-weight: 800; color: var(--purple);
-  background: var(--purple-dim); border: 2px solid #ddd6fe;
-  border-radius: 20px; padding: 4px 10px;
+  font-size: 12px; font-weight: 700; color: var(--cyan);
+  background: var(--cyan-dim); border: 1px solid rgba(103,232,249,0.2);
+  border-radius: 20px; padding: 4px 11px;
 }
 .mode-label {
-  font-size: 12px; font-weight: 800; color: var(--muted);
-  max-width: 110px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 12px; font-weight: 600; color: var(--muted);
+  max-width: 110px; text-align: center;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 
-.progress-wrap { padding: 0 18px 8px; flex-shrink: 0; position: relative; z-index: 1; }
+.progress-wrap { padding: 0 18px 8px; flex-shrink: 0; }
 .progress-bar {
-  height: 10px; background: var(--surface2);
-  border-radius: 5px; overflow: hidden;
-  border: 2px solid var(--border);
+  height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden;
+  position: relative;
 }
 .progress-fill {
-  height: 100%; border-radius: 5px;
-  background: linear-gradient(90deg, var(--orange), var(--pink));
+  height: 100%; border-radius: 2px;
+  background: linear-gradient(90deg, var(--blue), var(--cyan));
   transition: width 0.4s ease;
+  box-shadow: 0 0 8px rgba(99,179,237,0.5);
 }
-.progress-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); font-weight: 700; margin-top: 4px; }
+.progress-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); font-weight: 600; margin-top: 5px; }
 
-.study-stats { display: flex; gap: 8px; padding: 0 18px 8px; flex-shrink: 0; position: relative; z-index: 1; }
+.study-stats { display: flex; gap: 8px; padding: 0 18px 8px; flex-shrink: 0; }
 .stat {
   flex: 1; background: var(--surface);
-  border: 2.5px solid var(--border);
-  border-radius: 14px; padding: 8px 10px; text-align: center;
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 9px 10px; text-align: center;
 }
-.stat-num { font-size: 20px; font-weight: 900; line-height: 1; }
-.stat-num.green { color: var(--green); }
-.stat-num.red   { color: var(--red); }
-.stat-num.gray  { color: var(--muted); }
-.stat-label { font-size: 10px; color: var(--muted); font-weight: 700; margin-top: 2px; }
+.stat-num { font-size: 20px; font-weight: 800; line-height: 1; }
+.stat-num.green  { color: var(--green); }
+.stat-num.red    { color: var(--red); }
+.stat-num.gray   { color: var(--muted); }
+.stat-label { font-size: 10px; color: var(--muted); font-weight: 600; margin-top: 2px; letter-spacing: 0.3px; }
 
 .card-area {
   flex: 1; display: flex; align-items: center; justify-content: center;
-  padding: 0 18px; position: relative; overflow: hidden; z-index: 1;
+  padding: 0 18px; position: relative; overflow: hidden;
 }
 
-/* 猫キャラ（カード横に浮かぶ） */
-.cat-buddy {
-  position: absolute;
-  font-size: 32px;
-  bottom: -8px; right: 12px;
-  animation: catFloat 3s ease-in-out infinite;
-  pointer-events: none; z-index: 2;
-  transition: opacity 0.3s;
+/* スキャンライン演出 */
+.card-area::before {
+  content: '';
+  position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(99,179,237,0.012) 3px,
+    rgba(99,179,237,0.012) 4px
+  );
+  z-index: 0;
 }
-@keyframes catFloat { 0%,100%{transform:translateY(0) rotate(-5deg)} 50%{transform:translateY(-8px) rotate(5deg)} }
 
 .card {
   width: 100%; max-width: 400px;
   background: var(--surface);
-  border: 3px solid var(--border);
-  border-radius: 24px;
-  padding: 28px 24px 24px;
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 30px 26px;
   text-align: center; position: relative;
   cursor: pointer; user-select: none;
-  box-shadow: 0 6px 0 rgba(0,0,0,0.1);
+  box-shadow: var(--glow), inset 0 1px 0 rgba(255,255,255,0.04);
   transition: transform 0.08s ease;
-  will-change: transform;
+  will-change: transform; z-index: 1;
 }
 .card:active { transform: scale(0.98); }
 
+/* カード上部のライン */
+.card::before {
+  content: '';
+  position: absolute; top: 0; left: 20px; right: 20px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--blue), transparent);
+  opacity: 0.4;
+}
+
 .card-pos-tag {
-  display: inline-block; font-size: 11px; font-weight: 800;
-  letter-spacing: 0.8px;
-  background: var(--orange-dim); color: var(--orange);
-  border: 2px solid #fed7aa;
-  border-radius: 10px; padding: 3px 10px; margin-bottom: 14px;
+  display: inline-block; font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1.5px;
+  background: var(--blue-dim); color: var(--blue);
+  border: 1px solid rgba(99,179,237,0.25);
+  border-radius: 6px; padding: 3px 10px; margin-bottom: 16px;
 }
 .word {
-  font-size: 36px; font-weight: 900; color: var(--text);
-  line-height: 1.15; margin-bottom: 6px; word-break: break-word;
+  font-size: 36px; font-weight: 800; letter-spacing: -0.5px;
+  color: var(--text); margin-bottom: 6px; word-break: break-word;
+  line-height: 1.15;
 }
-.phonetic { font-size: 13px; color: var(--muted); font-weight: 600; min-height: 18px; margin-bottom: 14px; }
-.meaning-wrap { min-height: 54px; display: flex; align-items: center; justify-content: center; }
+.phonetic { font-size: 13px; color: var(--muted); font-weight: 500; min-height: 18px; margin-bottom: 16px; }
+.meaning-wrap { min-height: 56px; display: flex; align-items: center; justify-content: center; }
 .meaning {
-  font-size: 18px; font-weight: 800; color: var(--orange);
+  font-size: 18px; font-weight: 700;
+  background: linear-gradient(135deg, var(--blue), var(--cyan));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
   opacity: 0; transform: translateY(6px);
   transition: opacity 0.25s ease, transform 0.25s ease; line-height: 1.5;
 }
 .meaning.visible { opacity: 1; transform: translateY(0); }
 .tap-hint {
-  font-size: 12px; color: var(--muted); font-weight: 700;
-  margin-top: 14px; transition: opacity 0.3s;
-  display: flex; align-items: center; justify-content: center; gap: 4px;
+  font-size: 12px; color: var(--muted); font-weight: 500;
+  margin-top: 16px; transition: opacity 0.3s; letter-spacing: 0.2px;
 }
-.tap-hint::before { content: '👆'; font-size: 14px; }
+.example-wrap {
+  margin-top: 12px; border-top: 1px solid var(--border); padding-top: 10px;
+  opacity: 0; transform: translateY(6px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  display: none;
+}
+.example-wrap.visible { opacity: 1; transform: translateY(0); display: block; }
+.example-en {
+  font-size: 13px; font-weight: 600; color: var(--cyan);
+  line-height: 1.6; margin-bottom: 4px; font-style: italic;
+}
+.example-ja { font-size: 12px; color: var(--muted); font-weight: 500; line-height: 1.5; }
+.tap-hint2 {
+  font-size: 11px; color: rgba(103,232,249,0.45); font-weight: 500;
+  margin-top: 10px; letter-spacing: 0.2px; display: none;
+}
+.tap-hint2.show { display: block; }
 
 .swipe-overlay {
-  position: absolute; inset: 0; border-radius: 22px;
-  opacity: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  font-size: 22px; font-weight: 900; transition: opacity 0.1s; pointer-events: none; gap: 4px;
+  position: absolute; inset: 0; border-radius: 20px;
+  opacity: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 800; transition: opacity 0.1s; pointer-events: none;
+  letter-spacing: 0.5px;
 }
-.swipe-overlay.good { background: rgba(34,197,94,0.15); color: var(--green); border: 3px solid rgba(34,197,94,0.4); }
-.swipe-overlay.bad  { background: rgba(239,68,68,0.12);  color: var(--red);   border: 3px solid rgba(239,68,68,0.3); }
-.swipe-overlay-cat { font-size: 32px; }
+.swipe-overlay.good {
+  background: linear-gradient(135deg, rgba(74,222,128,0.12), rgba(74,222,128,0.06));
+  color: var(--green); border: 1px solid rgba(74,222,128,0.3);
+}
+.swipe-overlay.bad {
+  background: linear-gradient(135deg, rgba(248,113,113,0.10), rgba(248,113,113,0.05));
+  color: var(--red); border: 1px solid rgba(248,113,113,0.25);
+}
 
 .swipe-guide {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 6px 18px; flex-shrink: 0; position: relative; z-index: 1;
+  padding: 5px 18px; flex-shrink: 0;
 }
-.guide-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); font-weight: 700; }
+.guide-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); font-weight: 600; }
 .guide-icon {
-  width: 30px; height: 30px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center; font-size: 14px;
-  border: 2px solid var(--border);
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 13px;
+  border: 1px solid var(--border);
 }
-.guide-icon.bad  { background: var(--red-dim); }
-.guide-icon.good { background: var(--green-dim); }
+.guide-icon.bad  { background: var(--red-dim); color: var(--red); }
+.guide-icon.good { background: var(--green-dim); color: var(--green); }
 .speak-btn {
-  background: var(--purple-dim); border: 2px solid #ddd6fe;
-  border-radius: 50%; width: 46px; height: 46px;
+  background: var(--purple-dim); border: 1px solid rgba(167,139,250,0.25);
+  border-radius: 50%; width: 44px; height: 44px;
   display: flex; align-items: center; justify-content: center;
-  cursor: pointer; font-size: 20px; flex-shrink: 0;
-  box-shadow: 0 2px 0 #ddd6fe;
-  transition: transform 0.1s, box-shadow 0.1s;
+  cursor: pointer; font-size: 18px; flex-shrink: 0;
+  transition: box-shadow 0.2s;
 }
-.speak-btn:active { transform: translateY(2px); box-shadow: none; }
+.speak-btn:active { box-shadow: 0 0 12px rgba(167,139,250,0.3); }
 
-.actions { display: flex; gap: 10px; padding: 6px 18px 18px; flex-shrink: 0; position: relative; z-index: 1; }
+.actions { display: flex; gap: 10px; padding: 5px 18px 18px; flex-shrink: 0; }
 .btn {
-  flex: 1; border: none; border-radius: 16px; padding: 15px;
-  font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 800;
-  cursor: pointer; transition: transform 0.1s, box-shadow 0.1s;
+  flex: 1; border: 1px solid var(--border); border-radius: 14px; padding: 14px;
+  font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700;
+  cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s, transform 0.1s;
+  letter-spacing: 0.2px;
 }
-.btn:active { transform: translateY(3px); box-shadow: none !important; }
-.btn-bad  { background: var(--red-dim);   color: var(--red);   border: 2.5px solid #fca5a5; box-shadow: 0 3px 0 #fca5a5; }
-.btn-good { background: var(--green-dim); color: var(--green); border: 2.5px solid #86efac; box-shadow: 0 3px 0 #86efac; }
-.btn-skip { background: var(--surface2);  color: var(--muted); border: 2.5px solid var(--border); box-shadow: 0 3px 0 var(--border); flex: 0 0 60px; }
+.btn:active { transform: scale(0.97); }
+.btn-bad  { background: var(--red-dim);   color: var(--red);   border-color: rgba(248,113,113,0.2); }
+.btn-bad:active  { box-shadow: 0 0 16px rgba(248,113,113,0.2); }
+.btn-good { background: var(--green-dim); color: var(--green); border-color: rgba(74,222,128,0.2); }
+.btn-good:active { box-shadow: 0 0 16px rgba(74,222,128,0.2); }
+.btn-skip { background: var(--surface2);  color: var(--muted); flex: 0 0 60px; }
 
 /* ══ LOADING ══ */
 .loading {
   position: fixed; inset: 0; background: var(--bg);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 16px; z-index: 99;
+  gap: 18px; z-index: 99;
 }
-.loading-cat { font-size: 64px; animation: catBob 1s ease-in-out infinite; }
-.loading-text { font-size: 14px; color: var(--muted); font-weight: 700; }
+.loading-ring {
+  width: 48px; height: 48px;
+  border: 2px solid var(--border2);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  box-shadow: 0 0 16px rgba(99,179,237,0.2);
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 14px; color: var(--muted); font-weight: 600; letter-spacing: 0.5px; }
 
 /* ══ DONE ══ */
 .done-screen {
@@ -341,68 +390,77 @@ body {
   gap: 0; display: none; overflow: hidden; z-index: 50;
 }
 .done-screen.visible { display: flex; }
-.done-cat { font-size: 80px; margin-bottom: 8px; animation: catBob 1.5s ease-in-out infinite; }
-.done-title { font-size: 26px; font-weight: 900; color: var(--text); margin-bottom: 4px; }
-.done-speech {
-  background: var(--orange-dim); border: 2.5px solid #fed7aa;
-  border-radius: 16px; padding: 10px 18px; font-size: 14px; font-weight: 700; color: var(--orange);
-  margin-bottom: 12px; position: relative;
-}
-.done-speech::before {
-  content: '';
-  position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
-  border: 5px solid transparent; border-bottom-color: #fed7aa;
+
+/* DONE 背景光 */
+.done-screen::before {
+  content: ''; position: absolute;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(99,179,237,0.06) 0%, transparent 70%);
+  top: 50%; left: 50%; transform: translate(-50%, -50%);
+  pointer-events: none;
 }
 
-.score-ring { width: 130px; height: 130px; position: relative; margin: 8px 0; }
+.done-emoji { font-size: 64px; margin-bottom: 10px; }
+.done-title {
+  font-size: 26px; font-weight: 800; margin-bottom: 4px;
+  background: linear-gradient(135deg, var(--blue), var(--cyan));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.score-ring { width: 130px; height: 130px; position: relative; margin: 14px 0; }
 .score-ring svg { transform: rotate(-90deg); }
 .score-ring-text { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.score-big { font-size: 30px; font-weight: 900; color: var(--text); line-height: 1; }
-.score-small { font-size: 12px; color: var(--muted); font-weight: 700; margin-top: 2px; }
-.score-detail { font-size: 13px; color: var(--muted); font-weight: 700; margin-bottom: 4px; }
-
-.done-btns { display: flex; gap: 10px; margin-top: 16px; }
+.score-big { font-size: 32px; font-weight: 800; color: var(--text); line-height: 1; }
+.score-small { font-size: 12px; color: var(--muted); font-weight: 600; margin-top: 2px; }
+.score-detail { font-size: 13px; color: var(--muted); font-weight: 600; margin-bottom: 4px; }
+.done-btns { display: flex; gap: 10px; margin-top: 18px; }
 .btn-done {
-  border: 2.5px solid transparent; border-radius: 16px; padding: 13px 22px;
-  font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 800;
-  cursor: pointer; transition: transform 0.1s, box-shadow 0.1s;
+  border: 1px solid var(--border); border-radius: 14px; padding: 13px 22px;
+  font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700;
+  cursor: pointer; transition: box-shadow 0.2s, transform 0.1s;
 }
-.btn-done:active { transform: translateY(2px); box-shadow: none !important; }
-.btn-done.accent  { background: var(--orange); color: #fff; border-color: var(--orange); box-shadow: 0 3px 0 #c2580a; }
-.btn-done.surface { background: var(--surface); color: var(--muted); border-color: var(--border); box-shadow: 0 3px 0 var(--border); }
+.btn-done:active { transform: scale(0.97); }
+.btn-done.accent {
+  background: var(--blue-dim); color: var(--blue);
+  border-color: rgba(99,179,237,0.3);
+}
+.btn-done.accent:active { box-shadow: 0 0 20px rgba(99,179,237,0.2); }
+.btn-done.surface { background: var(--surface2); color: var(--muted); }
 
+/* confetti */
 .confetti-wrap { position: fixed; inset: 0; pointer-events: none; z-index: 200; }
 .confetti-piece { position: absolute; border-radius: 2px; animation: confettiFall linear forwards; }
-@keyframes confettiFall { 0%{transform:translateY(-20px) rotate(0deg);opacity:1;}100%{transform:translateY(100vh) rotate(720deg);opacity:0;} }
+@keyframes confettiFall {
+  0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
 
-@keyframes slideLeft  { from{transform:translateX(0);opacity:1;}  to{transform:translateX(-120%);opacity:0;} }
-@keyframes slideRight { from{transform:translateX(0);opacity:1;}  to{transform:translateX(120%);opacity:0;} }
-@keyframes slideIn    { from{transform:translateX(40px);opacity:0;}to{transform:translateX(0);opacity:1;} }
+@keyframes slideLeft  { from{transform:translateX(0);opacity:1;} to{transform:translateX(-120%);opacity:0;} }
+@keyframes slideRight { from{transform:translateX(0);opacity:1;} to{transform:translateX(120%);opacity:0;} }
+@keyframes slideIn    { from{transform:translateX(40px);opacity:0;} to{transform:translateX(0);opacity:1;} }
 .anim-left  { animation: slideLeft  0.3s ease forwards; }
 .anim-right { animation: slideRight 0.3s ease forwards; }
 .anim-in    { animation: slideIn    0.3s ease forwards; }
 </style>
 </head>
 <body>
-<div class="bg-deco"></div>
 
 <!-- ══ LOADING ══ -->
 <div class="loading" id="loading">
-  <div class="loading-cat">🐱</div>
-  <div class="loading-text" id="loadingMsg">単語を読み込み中にゃ…</div>
+  <div class="loading-ring"></div>
+  <div class="loading-text" id="loadingMsg">データを読み込んでいます…</div>
 </div>
 
 <!-- ══ DONE ══ -->
 <div class="done-screen" id="doneScreen">
-  <div class="done-cat" id="doneCat">🐱</div>
-  <div class="done-title" id="doneTitle">セッション完了！</div>
-  <div class="done-speech" id="doneSpeech">よくがんばったにゃ！</div>
+  <div class="done-emoji" id="doneEmoji">🎉</div>
+  <div class="done-title" id="doneTitle">セッション完了</div>
   <div class="score-ring">
     <svg width="130" height="130" viewBox="0 0 130 130">
-      <circle cx="65" cy="65" r="54" fill="none" stroke="#f3ede6" stroke-width="10"/>
-      <circle id="scoreArc" cx="65" cy="65" r="54" fill="none" stroke="#22c55e" stroke-width="10"
+      <circle cx="65" cy="65" r="54" fill="none" stroke="rgba(99,179,237,0.12)" stroke-width="10"/>
+      <circle id="scoreArc" cx="65" cy="65" r="54" fill="none" stroke="#4ade80" stroke-width="10"
               stroke-linecap="round" stroke-dasharray="339" stroke-dashoffset="339"
-              style="transition:stroke-dashoffset 1s ease,stroke 0.5s ease;"/>
+              style="transition:stroke-dashoffset 1s ease, stroke 0.5s ease; filter:drop-shadow(0 0 6px currentColor)"/>
     </svg>
     <div class="score-ring-text">
       <div class="score-big"  id="scoreBig">0</div>
@@ -412,7 +470,7 @@ body {
   <div class="score-detail" id="scoreDetail"></div>
   <div class="done-btns">
     <button class="btn-done surface" onclick="goMenu()">メニューへ</button>
-    <button class="btn-done accent"  onclick="restartSame()">もう一度！</button>
+    <button class="btn-done accent"  onclick="restartSame()">もう一度</button>
   </div>
 </div>
 <div class="confetti-wrap" id="confettiWrap"></div>
@@ -420,17 +478,14 @@ body {
 <!-- ══ MENU SCREEN ══ -->
 <div class="screen active" id="menuScreen">
   <div class="menu-header">
-    <div class="header-cat">🐱</div>
-    <div class="header-text">
-      <div class="menu-title">中学英単語帳</div>
-      <div class="menu-sub" id="menuSub">読み込み中にゃ…</div>
-    </div>
+    <div class="menu-title">中学英単語帳</div>
+    <div class="menu-sub" id="menuSub">読み込み中…</div>
   </div>
   <div class="menu-tabs">
-    <button class="tab-btn active" onclick="switchTab('all')"   id="tab-all">🎲 すべて</button>
-    <button class="tab-btn"        onclick="switchTab('pos')"   id="tab-pos">📚 品詞別</button>
-    <button class="tab-btn"        onclick="switchTab('weak')"  id="tab-weak">🔥 苦手</button>
-    <button class="tab-btn"        onclick="switchTab('stats')" id="tab-stats">📊 進捗</button>
+    <button class="tab-btn active" onclick="switchTab('all')"   id="tab-all">すべて</button>
+    <button class="tab-btn"        onclick="switchTab('pos')"   id="tab-pos">品詞別</button>
+    <button class="tab-btn"        onclick="switchTab('weak')"  id="tab-weak">苦手克服</button>
+    <button class="tab-btn"        onclick="switchTab('stats')" id="tab-stats">進捗</button>
   </div>
   <div class="menu-body" id="menuBody"></div>
 </div>
@@ -438,36 +493,37 @@ body {
 <!-- ══ STUDY SCREEN ══ -->
 <div class="screen" id="studyScreen">
   <div class="study-header">
-    <button class="back-btn" onclick="goMenu()">← もどる</button>
+    <button class="back-btn" onclick="goMenu()">← メニュー</button>
     <div class="mode-label" id="modeLabel"></div>
     <div class="session-badge" id="sessionBadge">— / —</div>
   </div>
   <div class="progress-wrap">
     <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
-    <div class="progress-label"><span id="progressLeft">0 / 0</span><span id="progressRight">残り 0枚</span></div>
+    <div class="progress-label">
+      <span id="progressLeft">0 / 0</span>
+      <span id="progressRight">残り 0枚</span>
+    </div>
   </div>
   <div class="study-stats">
-    <div class="stat"><div class="stat-num green" id="statKnown">0</div><div class="stat-label">✅ 正解</div></div>
-    <div class="stat"><div class="stat-num red"   id="statRetry">0</div><div class="stat-label">💦 復習</div></div>
-    <div class="stat"><div class="stat-num gray"  id="statTotal">0</div><div class="stat-label">📝 問題数</div></div>
+    <div class="stat"><div class="stat-num green" id="statKnown">0</div><div class="stat-label">正解</div></div>
+    <div class="stat"><div class="stat-num red"   id="statRetry">0</div><div class="stat-label">要復習</div></div>
+    <div class="stat"><div class="stat-num gray"  id="statTotal">0</div><div class="stat-label">問題数</div></div>
   </div>
   <div class="card-area">
     <div class="card" id="card">
-      <div class="swipe-overlay good" id="overlayGood">
-        <div class="swipe-overlay-cat">😸</div>
-        <div>覚えた！</div>
-      </div>
-      <div class="swipe-overlay bad" id="overlayBad">
-        <div class="swipe-overlay-cat">😿</div>
-        <div>復習しよう</div>
-      </div>
+      <div class="swipe-overlay good" id="overlayGood">覚えた ✓</div>
+      <div class="swipe-overlay bad"  id="overlayBad">要復習 ↩</div>
       <div class="card-pos-tag" id="cardPosTag">英語</div>
       <div class="word"     id="wordEl">---</div>
       <div class="phonetic" id="phoneticEl"></div>
       <div class="meaning-wrap"><div class="meaning" id="meaningEl"></div></div>
-      <div class="tap-hint" id="tapHint">タップして意味を見る</div>
+      <div class="tap-hint" id="tapHint">タップして意味を確認</div>
+      <div class="example-wrap" id="exampleWrap">
+        <div class="example-en" id="exampleEn"></div>
+        <div class="example-ja" id="exampleJa"></div>
+      </div>
+      <div class="tap-hint2" id="tapHint2">もう一度タップで例文を表示</div>
     </div>
-    <div class="cat-buddy" id="catBuddy">😺</div>
   </div>
   <div class="swipe-guide">
     <div class="guide-item"><div class="guide-icon bad">←</div><span>要復習</span></div>
@@ -475,9 +531,9 @@ body {
     <div class="guide-item"><span>覚えた</span><div class="guide-icon good">→</div></div>
   </div>
   <div class="actions">
-    <button class="btn btn-bad"  onclick="judge(false)">😿 復習</button>
+    <button class="btn btn-bad"  onclick="judge(false)">← 復習</button>
     <button class="btn btn-skip" onclick="skipCard()">skip</button>
-    <button class="btn btn-good" onclick="judge(true)">😸 覚えた</button>
+    <button class="btn btn-good" onclick="judge(true)">覚えた →</button>
   </div>
 </div>
 
@@ -492,25 +548,19 @@ const PARTS_OF_SPEECH = [
   { key:"adverb",      name:"副詞",  en:"Adverb",      gid:"1924216966", icon:"⚡" },
   { key:"preposition", name:"前置詞", en:"Preposition", gid:"1340365523", icon:"📍" },
   { key:"conjunction", name:"接続詞", en:"Conjunction", gid:"931669290",  icon:"🔗" },
+  { key:"idiom1",      name:"熟語①", en:"Idiom 1",     gid:"2096441416", icon:"💬", isIdiom:true },
+  { key:"idiom2",      name:"熟語②", en:"Idiom 2",     gid:"1426236419", icon:"💡", isIdiom:true },
 ];
 
-// 猫の表情セット
-const CAT_NORMAL  = ["😺","😸","🐱","😺","😸"];
-const CAT_GOOD    = ["😸","🎉","✨","😻","🐾"];
-const CAT_BAD     = ["😿","💦","😢","🙀","💪"];
-const CAT_PERFECT = ["🏆","🎊","😻","✨","🎉"];
-const CAT_MSG_GOOD    = ["すごいにゃ！","やったにゃ！","さすがにゃ！","完璧にゃ！"];
-const CAT_MSG_OK      = ["もう少しにゃ！","がんばれにゃ！","いい感じにゃ！"];
-const CAT_MSG_BAD     = ["復習しようにゃ！","次はできるにゃ！","一緒にがんばるにゃ！"];
-const CAT_MSG_PERFECT = ["満点にゃ！！","天才にゃ！！","完璧にゃ！！"];
-
 let wordsByPos = {}, allWords = [];
-let queue = [], cur = 0, shown = false;
+let queue = [], cur = 0, tapCount = 0;
 let knownN = 0, retryN = 0, currentMode = "", sessionTotal = 0;
 let stats = JSON.parse(localStorage.getItem("juniorVocabStats") || "{}");
 let currentTab = "all";
 
 function parseCSV(text, posKey) {
+  const posObj = PARTS_OF_SPEECH.find(p => p.key === posKey);
+  const isIdiom = posObj && posObj.isIdiom;
   return text.split(/\r?\n/).slice(1).map(line => {
     if (!line.trim()) return null;
     const cols = []; let buf = "", inQ = false;
@@ -521,13 +571,16 @@ function parseCSV(text, posKey) {
       buf += c;
     }
     cols.push(buf.trim());
-    let word, meaning;
+    // A=番号, B=熟語/単語, C=意味, D=例文(英), E=例文(日)
+    let word, meaning, exEn = "", exJa = "";
     if (cols.length >= 3 && !isNaN(cols[0]) && cols[0] !== "") {
       word = cols[1] || ""; meaning = cols[2] || "";
+      if (isIdiom) { exEn = cols[3] || ""; exJa = cols[4] || ""; }
     } else {
       word = cols[0] || ""; meaning = cols[1] || "";
+      if (isIdiom) { exEn = cols[2] || ""; exJa = cols[3] || ""; }
     }
-    return word ? { word, meaning, pos: posKey } : null;
+    return word ? { word, meaning, pos: posKey, exEn, exJa } : null;
   }).filter(Boolean);
 }
 
@@ -538,12 +591,10 @@ async function loadAll() {
     const text = await fetch(url).then(r => r.text()).catch(() => "");
     wordsByPos[pos.key] = parseCSV(text, pos.key);
     loaded++;
-    document.getElementById("loadingMsg").textContent = `読み込み中にゃ… ${loaded}/${total}`;
+    document.getElementById("loadingMsg").textContent = `データを読み込んでいます… ${loaded}/${total}`;
   }));
   allWords = PARTS_OF_SPEECH.flatMap(p => wordsByPos[p.key] || []);
 }
-
-function rnd(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
 
 function init() {
   loadAll().then(() => {
@@ -552,16 +603,13 @@ function init() {
     updateMenuSub();
   }).catch(() => {
     document.getElementById("loading").innerHTML =
-      `<div style="text-align:center;padding:24px">
-        <div style="font-size:48px">😿</div>
-        <p style="color:var(--red);font-weight:700;margin-top:12px">読み込みに失敗にゃ…<br>インターネット接続を確認してにゃ</p>
-      </div>`;
+      `<p style="color:var(--red);text-align:center;padding:20px;font-size:14px;font-weight:600">読み込みに失敗しました。<br>インターネット接続を確認してください。</p>`;
   });
 }
 
 function updateMenuSub() {
   const known = allWords.filter(w => stats[w.word+"_"+w.pos] === 1).length;
-  document.getElementById("menuSub").textContent = `全${allWords.length}語 ・ 覚えた${known}語にゃ！`;
+  document.getElementById("menuSub").textContent = `全 ${allWords.length} 語 ・ 習得済み ${known} 語`;
 }
 
 function switchTab(tab) {
@@ -589,18 +637,14 @@ function mc(icon, ic, name, desc, badge, bc, fn) {
 
 function renderAllTab(body) {
   body.innerHTML = `
-    <div style="background:var(--orange-dim);border:2.5px solid #fed7aa;border-radius:16px;padding:12px 14px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow-sm)">
-      <span style="font-size:28px">🐱</span>
-      <span style="font-size:13px;font-weight:700;color:var(--orange)">今日もいっしょにがんばるにゃ！</span>
-    </div>
-    <div class="menu-section-label">問題数を選ぶにゃ</div>
-    ${mc("🎲","ic-orange","ランダム 10問","サクッと10問チャレンジ！","10問","","startMode('r10')")}
-    ${mc("📚","ic-green","ランダム 30問","しっかり30問練習しよう","30問","","startMode('r30')")}
-    ${mc("🏆","ic-yellow","全単語チャレンジ","全部まとめて挑戦！","${allWords.length}語","","startMode('all')")}`;
+    <div class="menu-section-label">問題数を選択</div>
+    ${mc("🎲","ic-blue","ランダム 10問","ランダムな10問でクイック練習","10","","startMode('r10')")}
+    ${mc("📚","ic-cyan","ランダム 30問","30問でしっかり練習","30","","startMode('r30')")}
+    ${mc("🏆","ic-amber","全単語チャレンジ","全品詞まとめて挑戦","${allWords.length}語","","startMode('all')")}`;
 }
 
 function renderPosTab(body) {
-  let html = `<div class="menu-section-label">品詞を選んで学習にゃ</div><div class="pos-grid">`;
+  let html = `<div class="menu-section-label">品詞を選んで学習</div><div class="pos-grid">`;
   PARTS_OF_SPEECH.forEach(pos => {
     const words = wordsByPos[pos.key] || [];
     const known = words.filter(w => stats[w.word+"_"+w.pos] === 1).length;
@@ -608,7 +652,7 @@ function renderPosTab(body) {
     html += `<div class="pos-card" onclick="startMode('pos_${pos.key}')">
       <div class="pos-card-name">${pos.icon} ${pos.name}</div>
       <div class="pos-card-en">${pos.en}</div>
-      <div class="pos-card-count">覚えた ${known}/${words.length}語</div>
+      <div class="pos-card-count">${known} / ${words.length} 語</div>
       <div class="pos-card-prog" style="width:${pct}%"></div>
     </div>`;
   });
@@ -621,13 +665,13 @@ function renderWeakTab(body) {
   const unknownAll = allWords.filter(w => stats[w.word+"_"+w.pos] === undefined).length;
   let posRetry = PARTS_OF_SPEECH.map(pos => {
     const n = (wordsByPos[pos.key]||[]).filter(w => stats[w.word+"_"+w.pos] === 0).length;
-    return n > 0 ? mc(pos.icon,"ic-red",`${pos.name}の要復習`,`${pos.name}の苦手を克服にゃ！`,n,"red-b",`startMode('retry_${pos.key}')`) : "";
+    return n > 0 ? mc(pos.icon,"ic-red",`${pos.name}の要復習`,`${pos.name}の苦手単語を集中練習`,n,"red-b",`startMode('retry_${pos.key}')`) : "";
   }).join("");
   body.innerHTML = `
-    <div class="menu-section-label">苦手を克服するにゃ！</div>
-    ${mc("🔥","ic-red","要復習のみ（全品詞）","苦手な単語を集中練習にゃ！",retryAll,"red-b","startMode('retry')")}
-    ${mc("❓","ic-purple","未挑戦のみ（全品詞）","まだ挑戦していない単語にゃ",unknownAll,"","startMode('unknown')")}
-    ${posRetry ? `<div class="menu-section-label" style="margin-top:6px">品詞別・要復習にゃ</div>${posRetry}` : ""}`;
+    <div class="menu-section-label">苦手克服</div>
+    ${mc("🔥","ic-red","要復習のみ（全品詞）","要復習マークの単語を集中練習",retryAll,"red-b","startMode('retry')")}
+    ${mc("❓","ic-purple","未挑戦のみ（全品詞）","まだ挑戦していない単語",unknownAll,"","startMode('unknown')")}
+    ${posRetry ? `<div class="menu-section-label" style="margin-top:8px">品詞別・要復習</div>${posRetry}` : ""}`;
 }
 
 function renderStatsTab(body) {
@@ -639,27 +683,23 @@ function renderStatsTab(body) {
     const known = words.filter(w => stats[w.word+"_"+w.pos] === 1).length;
     const pct   = words.length ? Math.round(known/words.length*100) : 0;
     return `<div class="pos-row">
-      <div class="pos-label">${pos.icon}${pos.name}</div>
+      <div class="pos-label">${pos.icon} ${pos.name}</div>
       <div class="pos-bar-wrap"><div class="pos-bar-fill" style="width:${pct}%"></div></div>
       <div class="pos-count">${known}/${words.length}</div>
     </div>`;
   }).join("");
   body.innerHTML = `
     <div class="stats-bar">
-      <div class="sbar-item"><div class="sbar-num g">${totalKnown}</div><div class="sbar-label">覚えた</div></div>
+      <div class="sbar-item"><div class="sbar-num g">${totalKnown}</div><div class="sbar-label">習得済み</div></div>
       <div class="sbar-item"><div class="sbar-num r">${totalRetry}</div><div class="sbar-label">要復習</div></div>
       <div class="sbar-item"><div class="sbar-num a">${totalPct}%</div><div class="sbar-label">正解率</div></div>
     </div>
     <div class="pos-progress">${posRows}</div>
-    <div style="background:var(--orange-dim);border:2.5px solid #fed7aa;border-radius:14px;padding:12px;display:flex;align-items:center;gap:8px;box-shadow:var(--shadow-sm)">
-      <span style="font-size:24px">🐱</span>
-      <span style="font-size:13px;font-weight:700;color:var(--orange)">全${allWords.length}語のうち${totalKnown}語覚えたにゃ！あと${allWords.length-totalKnown}語にゃ！</span>
-    </div>
-    <button onclick="clearStats()" style="background:var(--surface);border:2.5px solid var(--border);border-radius:12px;padding:12px;color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;box-shadow:var(--shadow-sm)">記録をリセット</button>`;
+    <button onclick="clearStats()" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;letter-spacing:0.2px;">記録をリセット</button>`;
 }
 
 function clearStats() {
-  if (!confirm("学習記録をすべてリセットするにゃ？")) return;
+  if (!confirm("学習記録をすべてリセットしますか？")) return;
   stats = {};
   localStorage.removeItem("juniorVocabStats");
   renderTab(currentTab);
@@ -694,14 +734,13 @@ function startMode(mode) {
     pool=shuffle((wordsByPos[pk]||[]).filter(w=>stats[w.word+"_"+w.pos]===0));
   }
   if (!pool.length) {
-    if (mode.includes("retry"))  {alert("要復習の単語がいないにゃ！");return;}
-    if (mode.includes("unknown")){alert("未挑戦の単語はいないにゃ！");return;}
-    alert("単語が見つからないにゃ…"); return;
+    if (mode.includes("retry"))  { alert("要復習の単語がありません。"); return; }
+    if (mode.includes("unknown")){ alert("未挑戦の単語はありません。"); return; }
+    alert("単語が見つかりません。"); return;
   }
   queue=pool; sessionTotal=pool.length;
   document.getElementById("modeLabel").textContent=MODE_NAMES[mode]||mode;
   document.getElementById("statTotal").textContent=sessionTotal;
-  updateCatBuddy("normal");
   showScreen("studyScreen");
   showCard();
 }
@@ -719,23 +758,27 @@ function goMenu() {
   showScreen("menuScreen");
 }
 
-function updateCatBuddy(state) {
-  const el = document.getElementById("catBuddy");
-  if (!el) return;
-  if      (state==="good")  el.textContent = rnd(CAT_GOOD);
-  else if (state==="bad")   el.textContent = rnd(CAT_BAD);
-  else                      el.textContent = rnd(CAT_NORMAL);
+function isIdiom(w) {
+  const p = PARTS_OF_SPEECH.find(p => p.key === w.pos);
+  return p && p.isIdiom;
 }
 
 function showCard() {
   if (cur>=queue.length){showDone();return;}
-  const w=queue[cur]; shown=false;
+  const w=queue[cur]; tapCount=0;
   const pos=PARTS_OF_SPEECH.find(p=>p.key===w.pos);
   document.getElementById("cardPosTag").textContent = pos ? pos.name : "英語";
   document.getElementById("wordEl").textContent     = w.word;
   document.getElementById("meaningEl").textContent  = w.meaning;
   document.getElementById("meaningEl").classList.remove("visible");
-  document.getElementById("tapHint").style.opacity  = "1";
+  // 例文エリアリセット
+  const ew=document.getElementById("exampleWrap");
+  const th2=document.getElementById("tapHint2");
+  ew.classList.remove("visible"); ew.style.display="none";
+  th2.classList.remove("show");
+  document.getElementById("tapHint").style.opacity="1";
+  // 熟語なら2回目タップ案内を準備
+  if(isIdiom(w)){th2.textContent="もう一度タップで例文を表示";}
   const total=queue.length, pct=Math.round((cur/total)*100);
   document.getElementById("progressFill").style.width  = pct+"%";
   document.getElementById("progressLeft").textContent  = `${cur} / ${total}`;
@@ -743,14 +786,29 @@ function showCard() {
   document.getElementById("sessionBadge").textContent  = `${cur+1} / ${total}`;
   document.getElementById("statKnown").textContent=knownN;
   document.getElementById("statRetry").textContent=retryN;
-  updateCatBuddy("normal");
 }
 
 function revealMeaning() {
-  if(shown)return; shown=true;
-  document.getElementById("meaningEl").classList.add("visible");
-  document.getElementById("tapHint").style.opacity="0";
-  speak(queue[cur].word);
+  const w = queue[cur];
+  tapCount++;
+  if (tapCount === 1) {
+    // 1回目：意味表示
+    document.getElementById("meaningEl").classList.add("visible");
+    document.getElementById("tapHint").style.opacity="0";
+    speak(w.word);
+    if(isIdiom(w) && w.exEn){
+      document.getElementById("tapHint2").classList.add("show");
+    }
+  } else if (tapCount === 2 && isIdiom(w)) {
+    // 2回目（熟語のみ）：例文表示
+    const ew=document.getElementById("exampleWrap");
+    document.getElementById("exampleEn").textContent = w.exEn || "";
+    document.getElementById("exampleJa").textContent = w.exJa || "";
+    ew.style.display="block";
+    setTimeout(()=>ew.classList.add("visible"),10);
+    document.getElementById("tapHint2").classList.remove("show");
+    speak(w.exEn || w.word);
+  }
 }
 
 function speak(text) {
@@ -762,8 +820,8 @@ function speak(text) {
 
 function judge(good) {
   const w=queue[cur], key=w.word+"_"+w.pos;
-  if(good){stats[key]=1;knownN++;animCard("anim-right");updateCatBuddy("good");}
-  else    {stats[key]=0;retryN++;animCard("anim-left"); updateCatBuddy("bad");}
+  if(good){stats[key]=1;knownN++;animCard("anim-right");}
+  else    {stats[key]=0;retryN++;animCard("anim-left");}
   localStorage.setItem("juniorVocabStats",JSON.stringify(stats));
   setTimeout(()=>{cur++;showCard();},300);
 }
@@ -779,30 +837,29 @@ function animCard(cls){
 function showDone() {
   const total=sessionTotal, pct=total>0?Math.round(knownN/total*100):0;
   const isPerfect=knownN===total&&total>0;
-  let cat="😺", title="セッション完了！", msg=rnd(CAT_MSG_BAD);
-  if      (isPerfect){ cat=rnd(CAT_PERFECT); title="満点！すごいにゃ！"; msg=rnd(CAT_MSG_PERFECT); }
-  else if (pct>=80)  { cat="😸"; title="よくできたにゃ！"; msg=rnd(CAT_MSG_GOOD); }
-  else if (pct>=50)  { cat="😺"; title="もう少しにゃ！";   msg=rnd(CAT_MSG_OK); }
-  else               { cat="😿"; title="復習しようにゃ！"; msg=rnd(CAT_MSG_BAD); }
-  document.getElementById("doneCat").textContent     = cat;
-  document.getElementById("doneTitle").textContent   = title;
-  document.getElementById("doneSpeech").textContent  = msg;
-  document.getElementById("scoreBig").textContent    = knownN;
-  document.getElementById("scoreSmall").textContent  = `/ ${total}問`;
-  document.getElementById("scoreDetail").textContent = `正解率 ${pct}%　（要復習 ${retryN}語）`;
+  let emoji="😊", title="セッション完了";
+  if      (isPerfect){ emoji="🏆"; title="完璧！満点達成！"; }
+  else if (pct>=80)  { emoji="🎉"; title="よくできました！"; }
+  else if (pct>=50)  { emoji="💪"; title="もう少しです！"; }
+  else               { emoji="📖"; title="復習しましょう！"; }
+  document.getElementById("doneEmoji").textContent  = emoji;
+  document.getElementById("doneTitle").textContent  = title;
+  document.getElementById("scoreBig").textContent   = knownN;
+  document.getElementById("scoreSmall").textContent = `/ ${total}問`;
+  document.getElementById("scoreDetail").textContent= `正解率 ${pct}%　（要復習 ${retryN}語）`;
   const arc=document.getElementById("scoreArc");
-  arc.style.stroke=isPerfect?"#eab308":pct>=80?"#22c55e":pct>=50?"#f97316":"#ef4444";
+  arc.style.stroke=isPerfect?"#fbbf24":pct>=80?"#4ade80":pct>=50?"#63b3ed":"#f87171";
   document.getElementById("doneScreen").classList.add("visible");
   setTimeout(()=>{arc.style.strokeDashoffset=339-(339*pct/100);},100);
-  if(pct>=80)launchConfetti(isPerfect?150:70);
+  if(pct>=80)launchConfetti(isPerfect?130:65);
 }
 
 function launchConfetti(count){
   const wrap=document.getElementById("confettiWrap"); wrap.innerHTML="";
-  const colors=["#f97316","#ec4899","#22c55e","#eab308","#8b5cf6","#3b82f6","#ef4444","#06b6d4"];
+  const colors=["#63b3ed","#67e8f9","#4ade80","#a78bfa","#fbbf24","#f87171","#e2e8f8"];
   for(let i=0;i<count;i++){
     const el=document.createElement("div"); el.className="confetti-piece";
-    const size=6+Math.random()*10;
+    const size=5+Math.random()*9;
     el.style.cssText=`left:${Math.random()*100}vw;top:-20px;background:${colors[Math.floor(Math.random()*colors.length)]};width:${size}px;height:${size}px;animation-duration:${1.5+Math.random()*2}s;animation-delay:${Math.random()*1.2}s;border-radius:${Math.random()>0.5?'50%':'2px'}`;
     wrap.appendChild(el);
   }
