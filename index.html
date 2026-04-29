@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>中学英単語帳</title>
+<title>中学英単語・熟語</title>
 <link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -152,6 +152,25 @@ body::before {
   background: linear-gradient(90deg, var(--blue), var(--cyan));
   transition: width 0.6s ease;
 }
+.pos-card-clear {
+  position: absolute; top: 8px; right: 8px;
+  font-size: 14px; line-height: 1;
+}
+.pos-sub-card {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 11px 13px; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; transition: border-color 0.2s, box-shadow 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.pos-sub-card:active { border-color: var(--border2); box-shadow: var(--glow); }
+.pos-sub-left { display: flex; flex-direction: column; gap: 3px; }
+.pos-sub-name { font-size: 14px; font-weight: 700; color: var(--text); }
+.pos-sub-count { font-size: 11px; color: var(--blue); font-weight: 600; }
+.pos-sub-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.pos-sub-clear { font-size: 16px; }
+.pos-sub-bar-wrap { width: 60px; height: 4px; background: var(--surface3, #252e42); border-radius: 2px; overflow: hidden; }
+.pos-sub-bar-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--blue), var(--cyan)); transition: width 0.6s ease; }
 
 /* 進捗 */
 .pos-progress {
@@ -548,8 +567,7 @@ const PARTS_OF_SPEECH = [
   { key:"adverb",      name:"副詞",  en:"Adverb",      gid:"1924216966", icon:"⚡" },
   { key:"preposition", name:"前置詞", en:"Preposition", gid:"1340365523", icon:"📍" },
   { key:"conjunction", name:"接続詞", en:"Conjunction", gid:"931669290",  icon:"🔗" },
-  { key:"idiom1",      name:"熟語①", en:"Idiom 1",     gid:"2096441416", icon:"💬", isIdiom:true },
-  { key:"idiom2",      name:"熟語②", en:"Idiom 2",     gid:"1426236419", icon:"💡", isIdiom:true },
+  { key:"idiom",       name:"熟語",  en:"Idiom",       gid:"2096441416", icon:"💬", isIdiom:true },
 ];
 
 let wordsByPos = {}, allWords = [];
@@ -680,20 +698,118 @@ function renderAllTab(body) {
     ${mc("🏆","ic-amber","全単語チャレンジ","全品詞まとめて挑戦","${allWords.length}語","","startMode('all')")}`;
 }
 
+// 品詞の語数を30語単位で分割（端数は最後のグループに混ぜる）
+const CHUNK = 30;
+function makeChunks(words) {
+  if (words.length <= CHUNK) return [words];
+  const n = Math.floor(words.length / CHUNK);
+  // 最後グループが10語未満になるなら前のグループに吸収
+  const chunks = [];
+  let start = 0;
+  for (let i = 0; i < n; i++) {
+    const isLast = (i === n - 1);
+    const remaining = words.length - start;
+    const thisSize = isLast ? remaining : CHUNK;
+    // 次のグループが9語以下になるなら今回まとめて取る
+    if (!isLast && remaining - CHUNK < 10) {
+      chunks.push(words.slice(start));
+      break;
+    }
+    chunks.push(words.slice(start, start + thisSize));
+    start += thisSize;
+    if (isLast) break;
+  }
+  return chunks;
+}
+
+function chunkClearMark(posKey, chunkIdx, chunkWords) {
+  const allKnown = chunkWords.every(w => stats[w.word+"_"+w.pos] === 1);
+  return allKnown && chunkWords.length > 0 ? "✅" : "";
+}
+
+function posClearMark(posKey, words) {
+  if (!words.length) return "";
+  return words.every(w => stats[w.word+"_"+w.pos] === 1) ? "✅" : "";
+}
+
 function renderPosTab(body) {
   let html = `<div class="menu-section-label">品詞を選んで学習</div><div class="pos-grid">`;
   PARTS_OF_SPEECH.forEach(pos => {
     const words = wordsByPos[pos.key] || [];
     const known = words.filter(w => stats[w.word+"_"+w.pos] === 1).length;
     const pct   = words.length ? Math.round(known/words.length*100) : 0;
-    html += `<div class="pos-card" onclick="startMode('pos_${pos.key}')">
-      <div class="pos-card-name">${pos.icon} ${pos.name}</div>
+    const clear = posClearMark(pos.key, words);
+    const chunks = makeChunks(words);
+    const needSub = chunks.length > 1;
+    const onclick = needSub
+      ? `showPosDetail('${pos.key}')`
+      : `startMode('pos_${pos.key}')`;
+    html += `<div class="pos-card" onclick="${onclick}">
+      <div class="pos-card-name">${pos.icon} ${pos.name}${needSub ? ' ›' : ''}</div>
       <div class="pos-card-en">${pos.en}</div>
       <div class="pos-card-count">${known} / ${words.length} 語</div>
+      ${clear ? `<div class="pos-card-clear">${clear}</div>` : ''}
       <div class="pos-card-prog" style="width:${pct}%"></div>
     </div>`;
   });
   html += `</div>`;
+  body.innerHTML = html;
+}
+
+function showPosDetail(posKey) {
+  const pos   = PARTS_OF_SPEECH.find(p => p.key === posKey);
+  const words = wordsByPos[posKey] || [];
+  const chunks = makeChunks(words);
+  const known  = words.filter(w => stats[w.word+"_"+w.pos] === 1).length;
+  const pct    = words.length ? Math.round(known/words.length*100) : 0;
+  const clear  = posClearMark(posKey, words);
+
+  const body = document.getElementById("menuBody");
+  let html = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+      <button onclick="renderPosTab(document.getElementById('menuBody'))"
+        style="background:var(--blue-dim);border:1px solid rgba(99,179,237,0.25);border-radius:20px;
+               padding:6px 13px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;
+               color:var(--blue);cursor:pointer;">← 戻る</button>
+      <span style="font-size:16px;font-weight:700;color:var(--text)">${pos.icon} ${pos.name}</span>
+      <span style="font-size:12px;color:var(--muted);font-weight:600">${known}/${words.length}語 ${clear}</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;">`;
+
+  chunks.forEach((chunk, i) => {
+    const label   = `${pos.name}${'①②③④⑤⑥⑦⑧⑨⑩'[i]}`;
+    const cKnown  = chunk.filter(w => stats[w.word+"_"+w.pos] === 1).length;
+    const cPct    = chunk.length ? Math.round(cKnown/chunk.length*100) : 0;
+    const cClear  = chunkClearMark(posKey, i, chunk);
+    // chunk を startMode で渡せるよう index で管理
+    html += `
+      <div class="pos-sub-card" onclick="startModeChunk('${posKey}',${i})">
+        <div class="pos-sub-left">
+          <div class="pos-sub-name">${label}</div>
+          <div class="pos-sub-count">${cKnown} / ${chunk.length} 語</div>
+        </div>
+        <div class="pos-sub-right">
+          ${cClear ? `<span class="pos-sub-clear">${cClear}</span>` : ''}
+          <div class="pos-sub-bar-wrap">
+            <div class="pos-sub-bar-fill" style="width:${cPct}%"></div>
+          </div>
+        </div>
+      </div>`;
+  });
+  html += `
+      <div class="pos-sub-card" onclick="startMode('pos_${posKey}')"
+        style="border-color:rgba(99,179,237,0.2);background:var(--blue-dim);">
+        <div class="pos-sub-left">
+          <div class="pos-sub-name" style="color:var(--blue)">${pos.name} 全部</div>
+          <div class="pos-sub-count">${words.length} 語まとめて</div>
+        </div>
+        <div class="pos-sub-right">
+          <div class="pos-sub-bar-wrap">
+            <div class="pos-sub-bar-fill" style="width:${pct}%"></div>
+          </div>
+        </div>
+      </div>
+    </div>`;
   body.innerHTML = html;
 }
 
@@ -754,6 +870,23 @@ function shuffle(arr) {
   const a=[...arr];
   for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
   return a;
+}
+
+// チャンク（小分類）モード用
+function startModeChunk(posKey, chunkIdx) {
+  const pos    = PARTS_OF_SPEECH.find(p => p.key === posKey);
+  const words  = wordsByPos[posKey] || [];
+  const chunks = makeChunks(words);
+  const chunk  = chunks[chunkIdx] || [];
+  const label  = `${pos ? pos.name : posKey}${'①②③④⑤⑥⑦⑧⑨⑩'[chunkIdx]}`;
+  if (!chunk.length) { alert("単語が見つかりません。"); return; }
+  currentMode = `chunk_${posKey}_${chunkIdx}`;
+  knownN=0; retryN=0; cur=0;
+  queue = [...chunk]; sessionTotal = chunk.length;
+  document.getElementById("modeLabel").textContent = label;
+  document.getElementById("statTotal").textContent  = sessionTotal;
+  showScreen("studyScreen");
+  showCard();
 }
 
 function startMode(mode) {
