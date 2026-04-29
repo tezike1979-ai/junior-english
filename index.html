@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>中学英単語帳</title>
+<title>中学英単語・熟語</title>
 <link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -306,10 +306,10 @@ body::before {
 }
 .example-wrap.visible { opacity: 1; transform: translateY(0); display: block; }
 .example-en {
-  font-size: 13px; font-weight: 600; color: var(--cyan);
-  line-height: 1.6; margin-bottom: 4px; font-style: italic;
+  font-size: 16px; font-weight: 600; color: var(--cyan);
+  line-height: 1.6; margin-bottom: 6px; font-style: italic;
 }
-.example-ja { font-size: 12px; color: var(--muted); font-weight: 500; line-height: 1.5; }
+.example-ja { font-size: 15px; color: var(--muted); font-weight: 500; line-height: 1.5; }
 .tap-hint2 {
   font-size: 11px; color: rgba(103,232,249,0.45); font-weight: 500;
   margin-top: 10px; letter-spacing: 0.2px; display: none;
@@ -478,7 +478,7 @@ body::before {
 <!-- ══ MENU SCREEN ══ -->
 <div class="screen active" id="menuScreen">
   <div class="menu-header">
-    <div class="menu-title">中学英単語帳</div>
+    <div class="menu-title">中学英単語・熟語</div>
     <div class="menu-sub" id="menuSub">読み込み中…</div>
   </div>
   <div class="menu-tabs">
@@ -561,17 +561,50 @@ let currentTab = "all";
 function parseCSV(text, posKey) {
   const posObj = PARTS_OF_SPEECH.find(p => p.key === posKey);
   const isIdiom = posObj && posObj.isIdiom;
-  return text.split(/\r?\n/).slice(1).map(line => {
-    if (!line.trim()) return null;
+
+  // ── クォート内の改行を正しく扱うため、文字単位でレコード分割 ──
+  function splitRecords(raw) {
+    const records = []; let cur = "", inQ = false;
+    for (let i = 0; i < raw.length; i++) {
+      const c = raw[i];
+      if (c === '"') {
+        // 連続する "" はエスケープされた引用符
+        if (inQ && raw[i+1] === '"') { cur += '"'; i++; continue; }
+        inQ = !inQ;
+      } else if ((c === '\n' || (c === '\r' && raw[i+1] === '\n')) && !inQ) {
+        if (c === '\r') i++; // CRLF スキップ
+        records.push(cur); cur = "";
+      } else {
+        cur += c;
+      }
+    }
+    if (cur.trim()) records.push(cur);
+    return records;
+  }
+
+  // ── 1レコード（行）をカラム配列に分解 ──
+  function splitCols(line) {
     const cols = []; let buf = "", inQ = false;
     for (let i = 0; i < line.length; i++) {
       const c = line[i];
-      if (c === '"') { inQ = !inQ; continue; }
-      if (c === ',' && !inQ) { cols.push(buf.trim()); buf = ""; continue; }
-      buf += c;
+      if (c === '"') {
+        if (inQ && line[i+1] === '"') { buf += '"'; i++; continue; }
+        inQ = !inQ;
+      } else if (c === ',' && !inQ) {
+        cols.push(buf.trim()); buf = "";
+      } else {
+        buf += c;
+      }
     }
     cols.push(buf.trim());
-    // A=番号, B=熟語/単語, C=意味, D=例文(英), E=例文(日)
+    return cols;
+  }
+
+  const records = splitRecords(text);
+  return records.slice(1).map(line => {
+    if (!line.trim()) return null;
+    const cols = splitCols(line);
+    // A=番号, B=単語/熟語, C=意味, D=例文(英), E=日本語訳
     let word, meaning, exEn = "", exJa = "";
     if (cols.length >= 3 && !isNaN(cols[0]) && cols[0] !== "") {
       word = cols[1] || ""; meaning = cols[2] || "";
@@ -580,6 +613,10 @@ function parseCSV(text, posKey) {
       word = cols[0] || ""; meaning = cols[1] || "";
       if (isIdiom) { exEn = cols[2] || ""; exJa = cols[3] || ""; }
     }
+    // セル内改行（\n）をスペースに変換して1行に整形
+    meaning = meaning.replace(/\n/g, ' / ');
+    exEn    = exEn.replace(/\n/g, ' ');
+    exJa    = exJa.replace(/\n/g, ' ');
     return word ? { word, meaning, pos: posKey, exEn, exJa } : null;
   }).filter(Boolean);
 }
