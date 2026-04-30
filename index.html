@@ -777,8 +777,7 @@ function showPosDetail(posKey) {
     <div style="display:flex;flex-direction:column;gap:8px;">`;
 
   chunks.forEach((chunk, i) => {
-    const NUMS = ['①','②','③','④','⑤','⑥','⑦','⑧','⑨','⑩'];
-    const label   = `${pos.name}${NUMS[i] || (i+1)}`;
+    const label = `${pos.name}${i+1}`;
     const cKnown  = chunk.filter(w => stats[w.word+"_"+w.pos] === 1).length;
     const cPct    = chunk.length ? Math.round(cKnown/chunk.length*100) : 0;
     const cClear  = chunkClearMark(posKey, i, chunk);
@@ -879,8 +878,7 @@ function startModeChunk(posKey, chunkIdx) {
   const words  = wordsByPos[posKey] || [];
   const chunks = makeChunks(words);
   const chunk  = chunks[chunkIdx] || [];
-  const NUMS2 = ['①','②','③','④','⑤','⑥','⑦','⑧','⑨','⑩'];
-  const label  = `${pos ? pos.name : posKey}${NUMS2[chunkIdx] || (chunkIdx+1)}`;
+  const label  = `${pos ? pos.name : posKey}${chunkIdx+1}`;
   if (!chunk.length) { alert("単語が見つかりません。"); return; }
   currentMode = `chunk_${posKey}_${chunkIdx}`;
   knownN=0; retryN=0; cur=0;
