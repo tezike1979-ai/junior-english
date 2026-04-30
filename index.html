@@ -499,6 +499,7 @@ body::before {
   <div class="menu-header">
     <div class="menu-title">中学英単語・熟語</div>
     <div class="menu-sub" id="menuSub">読み込み中…</div>
+    <div style="font-size:10px;color:var(--muted);margin-top:2px;letter-spacing:0.5px;opacity:0.6">ver 1.00</div>
   </div>
   <div class="menu-tabs">
     <button class="tab-btn active" onclick="switchTab('all')"   id="tab-all">すべて</button>
@@ -626,10 +627,10 @@ function parseCSV(text, posKey) {
     let word, meaning, exEn = "", exJa = "";
     if (cols.length >= 3 && !isNaN(cols[0]) && cols[0] !== "") {
       word = cols[1] || ""; meaning = cols[2] || "";
-      if (isIdiom) { exEn = cols[3] || ""; exJa = cols[4] || ""; }
+      exEn = cols[3] || ""; exJa = cols[4] || "";  // 全品詞で読み込む
     } else {
       word = cols[0] || ""; meaning = cols[1] || "";
-      if (isIdiom) { exEn = cols[2] || ""; exJa = cols[3] || ""; }
+      exEn = cols[2] || ""; exJa = cols[3] || "";  // 全品詞で読み込む
     }
     // セル内改行（\n）をスペースに変換して1行に整形
     meaning = meaning.replace(/\n/g, ' / ');
@@ -978,8 +979,8 @@ function showCard() {
   ew.classList.remove("visible"); ew.style.display="none";
   th2.classList.remove("show");
   document.getElementById("tapHint").style.opacity="1";
-  // 熟語なら2回目タップ案内を準備
-  if(isIdiom(w)){th2.textContent="もう一度タップで例文を表示";}
+  // 例文がある場合は2回目タップ案内を準備（単語・熟語共通）
+  th2.textContent="もう一度タップで例文を表示";
   const total=queue.length, pct=Math.round((cur/total)*100);
   document.getElementById("progressFill").style.width  = pct+"%";
   document.getElementById("progressLeft").textContent  = `${cur} / ${total}`;
@@ -997,11 +998,12 @@ function revealMeaning() {
     document.getElementById("meaningEl").classList.add("visible");
     document.getElementById("tapHint").style.opacity="0";
     speak(w.word);
-    if(isIdiom(w) && w.exEn){
+    // 例文がある場合は2回目タップのヒントを表示
+    if (w.exEn) {
       document.getElementById("tapHint2").classList.add("show");
     }
-  } else if (tapCount === 2 && isIdiom(w)) {
-    // 2回目（熟語のみ）：例文表示
+  } else if (tapCount === 2 && w.exEn) {
+    // 2回目：例文表示（単語・熟語共通）
     const ew=document.getElementById("exampleWrap");
     document.getElementById("exampleEn").textContent = w.exEn || "";
     document.getElementById("exampleJa").textContent = w.exJa || "";
