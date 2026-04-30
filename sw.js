@@ -1,4 +1,4 @@
-const CACHE_NAME = "junior-vocab-v1";
+const CACHE_NAME = "junior-vocab-v5";
 const STATIC_ASSETS = ["./index.html", "./manifest.json"];
 
 self.addEventListener("install", event => {
