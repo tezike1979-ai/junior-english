@@ -539,8 +539,14 @@ body::before {
       <div class="meaning-wrap"><div class="meaning" id="meaningEl"></div></div>
       <div class="tap-hint" id="tapHint">タップして意味を確認</div>
       <div class="example-wrap" id="exampleWrap">
-        <div class="example-en" id="exampleEn"></div>
-        <div class="example-ja" id="exampleJa"></div>
+        <div style="display:flex;align-items:flex-start;gap:8px">
+          <div style="flex:1">
+            <div class="example-en" id="exampleEn"></div>
+            <div class="example-ja" id="exampleJa"></div>
+          </div>
+          <button onclick="event.stopPropagation();speak(document.getElementById('exampleEn').textContent)"
+            style="flex-shrink:0;background:var(--cyan-dim);border:1px solid rgba(103,232,249,0.2);border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;margin-top:2px;">🔊</button>
+        </div>
       </div>
       <div class="tap-hint2" id="tapHint2">もう一度タップで例文を表示</div>
     </div>
