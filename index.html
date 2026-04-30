@@ -651,8 +651,37 @@ async function loadAll() {
   allWords = PARTS_OF_SPEECH.flatMap(p => wordsByPos[p.key] || []);
 }
 
+// 品詞ごとのシャッフル済み順序を localStorage に保存・復元
+function getFixedOrder(posKey, words) {
+  const storageKey = "vocabOrder_" + posKey;
+  const saved = localStorage.getItem(storageKey);
+  if (saved) {
+    try {
+      const savedWords = JSON.parse(saved);
+      // 保存済みの順序に合わせて並び替え（新規追加分は末尾に）
+      const wordMap = Object.fromEntries(words.map(w => [w.word, w]));
+      const ordered = savedWords
+        .filter(w => wordMap[w])
+        .map(w => wordMap[w]);
+      const newWords = words.filter(w => !savedWords.includes(w.word));
+      return [...ordered, ...newWords];
+    } catch(e) {}
+  }
+  // 初回：シャッフルして保存
+  const shuffled = shuffle(words);
+  localStorage.setItem(storageKey, JSON.stringify(shuffled.map(w => w.word)));
+  return shuffled;
+}
+
 function init() {
   loadAll().then(() => {
+    // 各品詞をシャッフルして固定順序に並び替え
+    PARTS_OF_SPEECH.forEach(pos => {
+      if (wordsByPos[pos.key] && wordsByPos[pos.key].length > 0) {
+        wordsByPos[pos.key] = getFixedOrder(pos.key, wordsByPos[pos.key]);
+      }
+    });
+    allWords = PARTS_OF_SPEECH.flatMap(p => wordsByPos[p.key] || []);
     document.getElementById("loading").style.display = "none";
     switchTab("all");
     updateMenuSub();
@@ -702,22 +731,20 @@ function renderAllTab(body) {
 const CHUNK = 30;
 function makeChunks(words) {
   if (words.length <= CHUNK) return [words];
-  const n = Math.floor(words.length / CHUNK);
-  // 最後グループが10語未満になるなら前のグループに吸収
+  // 端数が9語以下になるなら前のグループに吸収
+  const MIN_LAST = 10;
   const chunks = [];
   let start = 0;
-  for (let i = 0; i < n; i++) {
-    const isLast = (i === n - 1);
-    const remaining = words.length - start;
-    const thisSize = isLast ? remaining : CHUNK;
-    // 次のグループが9語以下になるなら今回まとめて取る
-    if (!isLast && remaining - CHUNK < 10) {
+  let remaining = words.length;
+  while (remaining > 0) {
+    if (remaining <= CHUNK + MIN_LAST) {
+      // 残りをまとめて最後のグループに
       chunks.push(words.slice(start));
       break;
     }
-    chunks.push(words.slice(start, start + thisSize));
-    start += thisSize;
-    if (isLast) break;
+    chunks.push(words.slice(start, start + CHUNK));
+    start += CHUNK;
+    remaining -= CHUNK;
   }
   return chunks;
 }
@@ -852,9 +879,13 @@ function renderStatsTab(body) {
 }
 
 function clearStats() {
-  if (!confirm("学習記録をすべてリセットしますか？")) return;
+  if (!confirm("学習記録と単語の並び順をすべてリセットしますか？")) return;
   stats = {};
   localStorage.removeItem("juniorVocabStats");
+  // シャッフル順序もリセット
+  PARTS_OF_SPEECH.forEach(pos => {
+    localStorage.removeItem("vocabOrder_" + pos.key);
+  });
   renderTab(currentTab);
   updateMenuSub();
 }
@@ -898,7 +929,7 @@ function startMode(mode) {
   else if (mode==="retry")   pool=shuffle(allWords.filter(w=>stats[w.word+"_"+w.pos]===0));
   else if (mode==="unknown") pool=shuffle(allWords.filter(w=>stats[w.word+"_"+w.pos]===undefined));
   else if (mode.startsWith("pos_")) {
-    const pk=mode.replace("pos_",""); pool=shuffle(wordsByPos[pk]||[]);
+    const pk=mode.replace("pos_",""); pool=[...(wordsByPos[pk]||[])];
   } else if (mode.startsWith("retry_")) {
     const pk=mode.replace("retry_","");
     pool=shuffle((wordsByPos[pk]||[]).filter(w=>stats[w.word+"_"+w.pos]===0));
