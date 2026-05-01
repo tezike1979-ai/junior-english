@@ -799,7 +799,7 @@ function renderAllTab(body) {
   const retryOffset  = knownLen;
   const unknownOffset= knownLen + retryLen;
 
-  body.innerHTML = \`
+  body.innerHTML = `
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:20px">
 
       <!-- 円グラフ -->
@@ -866,7 +866,7 @@ function renderAllTab(body) {
     <div class="menu-section-label">問題数を選択</div>
     \${mc("🎲","ic-blue","ランダム 10問","ランダムな10問でクイック練習","10","","startMode('r10')")}
     \${mc("📚","ic-cyan","ランダム 30問","30問でしっかり練習","30","","startMode('r30')")}
-  \`;
+  `;
 }
 
 // 品詞の語数を30語単位で分割（端数は最後のグループに混ぜる）
