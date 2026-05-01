@@ -1,5 +1,5 @@
-const CACHE_NAME = "junior-vocab-v7";
-const STATIC_ASSETS = ["./index.html", "./manifest.json"];
+const CACHE_NAME = "junior-vocab-v8";
+const STATIC_ASSETS = ["./index.html", "./manifest.json", "./words.json"];
 
 self.addEventListener("install", event => {
   event.waitUntil(

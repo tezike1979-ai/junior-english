@@ -646,33 +646,28 @@ function parseCSV(text, posKey) {
   }).filter(Boolean);
 }
 
-// タイムアウト付きfetch（10秒）
-async function fetchWithTimeout(url, ms=10000) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), ms);
-  try {
-    const res = await fetch(url, { signal: controller.signal });
-    clearTimeout(timer);
-    return await res.text();
-  } catch(e) {
-    clearTimeout(timer);
-    return "";
-  }
-}
-
+// words.json から読み込み（Safariのクロスオリジン問題を回避）
 async function loadAll() {
-  const total = PARTS_OF_SPEECH.length; let loaded = 0;
-  await Promise.all(PARTS_OF_SPEECH.map(async pos => {
-    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${pos.gid}`;
-    const text = await fetchWithTimeout(url, 15000);
-    wordsByPos[pos.key] = parseCSV(text, pos.key);
-    loaded++;
-    document.getElementById("loadingMsg").textContent = `データを読み込んでいます… ${loaded}/${total}`;
-  }));
+  document.getElementById("loadingMsg").textContent = "データを読み込んでいます…";
+
+  // words.json は同じGitHubリポジトリに配置されているので必ず読み込める
+  const res = await fetch('./words.json');
+  if (!res.ok) throw new Error(`words.json の読み込みに失敗しました (${res.status})`);
+
+  const data = await res.json();
+
+  // 品詞ごとに wordsByPos に格納
+  for (const pos of PARTS_OF_SPEECH) {
+    wordsByPos[pos.key] = (data[pos.key] || []).map(w => ({
+      ...w,
+      pos: pos.key
+    }));
+  }
+
   allWords = PARTS_OF_SPEECH.flatMap(p => wordsByPos[p.key] || []);
-  // 全シートが空の場合はエラー扱い
+
   if (allWords.length === 0) {
-    throw new Error("データが読み込めませんでした");
+    throw new Error("words.json にデータがありません");
   }
 }
 
