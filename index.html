@@ -646,16 +646,34 @@ function parseCSV(text, posKey) {
   }).filter(Boolean);
 }
 
+// タイムアウト付きfetch（10秒）
+async function fetchWithTimeout(url, ms=10000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  try {
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timer);
+    return await res.text();
+  } catch(e) {
+    clearTimeout(timer);
+    return "";
+  }
+}
+
 async function loadAll() {
   const total = PARTS_OF_SPEECH.length; let loaded = 0;
   await Promise.all(PARTS_OF_SPEECH.map(async pos => {
     const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${pos.gid}`;
-    const text = await fetch(url).then(r => r.text()).catch(() => "");
+    const text = await fetchWithTimeout(url, 15000);
     wordsByPos[pos.key] = parseCSV(text, pos.key);
     loaded++;
     document.getElementById("loadingMsg").textContent = `データを読み込んでいます… ${loaded}/${total}`;
   }));
   allWords = PARTS_OF_SPEECH.flatMap(p => wordsByPos[p.key] || []);
+  // 全シートが空の場合はエラー扱い
+  if (allWords.length === 0) {
+    throw new Error("データが読み込めませんでした");
+  }
 }
 
 // 品詞ごとのシャッフル済み順序を localStorage に保存・復元
@@ -692,9 +710,21 @@ function init() {
     document.getElementById("loading").style.display = "none";
     switchTab("all");
     updateMenuSub();
-  }).catch(() => {
-    document.getElementById("loading").innerHTML =
-      `<p style="color:var(--red);text-align:center;padding:20px;font-size:14px;font-weight:600">読み込みに失敗しました。<br>インターネット接続を確認してください。</p>`;
+  }).catch((e) => {
+    document.getElementById("loading").innerHTML = `
+      <div style="text-align:center;padding:24px 20px">
+        <div style="font-size:40px;margin-bottom:12px">⚠️</div>
+        <p style="color:var(--red);font-size:14px;font-weight:600;line-height:1.7;margin-bottom:16px">
+          データの読み込みに失敗しました。<br>
+          インターネット接続を確認して<br>
+          再試行してください。
+        </p>
+        <button onclick="location.reload()"
+          style="background:var(--blue-dim);border:1px solid var(--border2);border-radius:12px;
+                 padding:12px 24px;font-size:14px;font-weight:700;color:var(--blue);cursor:pointer;">
+          🔄 再読み込み
+        </button>
+      </div>`;
   });
 }
 
