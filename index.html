@@ -651,10 +651,20 @@ async function loadAll() {
   const msgEl = document.getElementById("loadingMsg");
   msgEl.textContent = "words.json を読み込んでいます…";
 
+  // 20秒タイムアウト付きfetch
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 20000);
+
   let res;
   try {
-    res = await fetch('./words.json');
+    res = await fetch('./words.json?v=' + Date.now(), {
+      signal: controller.signal,
+      cache: 'no-store'
+    });
+    clearTimeout(timeoutId);
   } catch(e) {
+    clearTimeout(timeoutId);
+    if (e.name === 'AbortError') throw new Error("タイムアウト: words.jsonの読み込みに20秒以上かかりました");
     throw new Error("ネットワークエラー: " + e.message);
   }
 
@@ -1227,7 +1237,16 @@ card.addEventListener("touchend",e=>{
   if(dx>60){judge(true);return;}if(dx<-60){judge(false);return;}
 },{passive:true});
 
-if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+// Service Worker: 古いキャッシュを全削除してから登録
+if ('serviceWorker' in navigator) {
+  // 全ての古いService Workerとキャッシュを削除
+  navigator.serviceWorker.getRegistrations().then(regs => {
+    regs.forEach(reg => reg.unregister());
+  });
+  caches.keys().then(keys => {
+    keys.forEach(key => caches.delete(key));
+  });
+}
 init();
 </script>
 </body>
