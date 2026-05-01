@@ -648,13 +648,28 @@ function parseCSV(text, posKey) {
 
 // words.json から読み込み（Safariのクロスオリジン問題を回避）
 async function loadAll() {
-  document.getElementById("loadingMsg").textContent = "データを読み込んでいます…";
+  const msgEl = document.getElementById("loadingMsg");
+  msgEl.textContent = "words.json を読み込んでいます…";
 
-  // words.json は同じGitHubリポジトリに配置されているので必ず読み込める
-  const res = await fetch('./words.json');
-  if (!res.ok) throw new Error(`words.json の読み込みに失敗しました (${res.status})`);
+  let res;
+  try {
+    res = await fetch('./words.json');
+  } catch(e) {
+    throw new Error("ネットワークエラー: " + e.message);
+  }
 
-  const data = await res.json();
+  if (!res.ok) {
+    throw new Error("words.json が見つかりません (HTTP " + res.status + ")\nGitHubにwords.jsonがアップロードされているか確認してください");
+  }
+
+  msgEl.textContent = "データを解析しています…";
+
+  let data;
+  try {
+    data = await res.json();
+  } catch(e) {
+    throw new Error("words.json の形式が正しくありません: " + e.message);
+  }
 
   // 品詞ごとに wordsByPos に格納
   for (const pos of PARTS_OF_SPEECH) {
@@ -665,9 +680,10 @@ async function loadAll() {
   }
 
   allWords = PARTS_OF_SPEECH.flatMap(p => wordsByPos[p.key] || []);
+  msgEl.textContent = "完了（" + allWords.length + "語）";
 
   if (allWords.length === 0) {
-    throw new Error("words.json にデータがありません");
+    throw new Error("words.json にデータがありません\n品詞キー: " + JSON.stringify(Object.keys(data)));
   }
 }
 
@@ -706,20 +722,17 @@ function init() {
     switchTab("all");
     updateMenuSub();
   }).catch((e) => {
-    document.getElementById("loading").innerHTML = `
-      <div style="text-align:center;padding:24px 20px">
-        <div style="font-size:40px;margin-bottom:12px">⚠️</div>
-        <p style="color:var(--red);font-size:14px;font-weight:600;line-height:1.7;margin-bottom:16px">
-          データの読み込みに失敗しました。<br>
-          インターネット接続を確認して<br>
-          再試行してください。
-        </p>
-        <button onclick="location.reload()"
-          style="background:var(--blue-dim);border:1px solid var(--border2);border-radius:12px;
-                 padding:12px 24px;font-size:14px;font-weight:700;color:var(--blue);cursor:pointer;">
-          🔄 再読み込み
-        </button>
-      </div>`;
+    document.getElementById("loading").innerHTML =
+      '<div style="text-align:center;padding:24px 20px">'
+      + '<div style="font-size:40px;margin-bottom:12px">⚠️</div>'
+      + '<p style="color:var(--red);font-size:13px;font-weight:600;line-height:1.7;margin-bottom:8px">'
+      + 'データの読み込みに失敗しました</p>'
+      + '<p style="color:var(--muted);font-size:11px;margin-bottom:16px;word-break:break-all;padding:0 8px">'
+      + (e && e.message ? e.message : String(e))
+      + '</p>'
+      + '<button onclick="location.reload()" style="background:var(--blue-dim);border:1px solid var(--border2);'
+      + 'border-radius:12px;padding:12px 24px;font-size:14px;font-weight:700;color:var(--blue);cursor:pointer;">'
+      + '🔄 再読み込み</button></div>';
   });
 }
 
