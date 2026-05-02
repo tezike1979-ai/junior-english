@@ -460,11 +460,66 @@ body::before {
 .anim-left  { animation: slideLeft  0.3s ease forwards; }
 .anim-right { animation: slideRight 0.3s ease forwards; }
 .anim-in    { animation: slideIn    0.3s ease forwards; }
+/* ── AIチャット ポップアップ ── */
+.chat-popup-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,0.5);
+  z-index:100; display:none; align-items:flex-end;
+  animation:fadeInBg 0.2s ease;
+}
+.chat-popup-overlay.open { display:flex; }
+@keyframes fadeInBg { from{opacity:0} to{opacity:1} }
+.chat-popup {
+  width:100%; max-height:70dvh; background:var(--surface);
+  border-radius:20px 20px 0 0; border-top:1px solid var(--border2);
+  display:flex; flex-direction:column;
+  animation:slideUp 0.25s ease;
+}
+@keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.chat-popup-handle { width:36px; height:4px; background:var(--border2); border-radius:2px; margin:10px auto 0; flex-shrink:0; }
+.chat-popup-header { display:flex; align-items:center; justify-content:space-between; padding:10px 16px 8px; flex-shrink:0; border-bottom:1px solid var(--border); }
+.chat-word-tag { font-size:12px; font-weight:700; color:var(--blue); background:var(--blue-dim); border:1px solid var(--border2); border-radius:8px; padding:3px 10px; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.chat-close-btn { background:var(--surface2); border:1px solid var(--border); border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:14px; color:var(--muted); flex-shrink:0; }
+.chat-messages { flex:1; overflow-y:auto; padding:10px 14px; display:flex; flex-direction:column; gap:8px; min-height:80px; }
+.chat-messages::-webkit-scrollbar { width:3px; }
+.chat-messages::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px; }
+.chat-bubble { max-width:88%; border-radius:12px; padding:8px 12px; font-size:13px; line-height:1.6; word-break:break-word; font-weight:500; }
+.chat-bubble.user { align-self:flex-end; background:var(--blue-dim); border:1px solid var(--border2); color:var(--text); }
+.chat-bubble.ai { align-self:flex-start; background:var(--surface2); border:1px solid var(--border); color:var(--text); }
+.chat-bubble.thinking { align-self:flex-start; background:var(--surface2); border:1px solid var(--border); color:var(--muted); font-style:italic; }
+.chat-suggest { display:flex; gap:6px; padding:4px 14px 8px; flex-wrap:nowrap; overflow-x:auto; flex-shrink:0; scrollbar-width:none; }
+.chat-suggest::-webkit-scrollbar { display:none; }
+.sq-btn { flex-shrink:0; background:var(--surface2); border:1px solid var(--border); border-radius:20px; padding:5px 11px; font-size:11px; font-weight:600; color:var(--muted); cursor:pointer; white-space:nowrap; }
+.sq-btn:active { border-color:var(--border2); color:var(--blue); }
+.chat-input-row { display:flex; gap:8px; padding:8px 14px 20px; flex-shrink:0; }
+.chat-input { flex:1; background:var(--surface2); border:1px solid var(--border); border-radius:20px; padding:9px 14px; font-family:'Outfit',sans-serif; font-size:13px; color:var(--text); outline:none; resize:none; line-height:1.4; max-height:80px; overflow-y:auto; }
+.chat-input:focus { border-color:var(--border2); }
+.chat-send-btn { background:var(--blue-dim); border:1px solid var(--border2); border-radius:50%; width:38px; height:38px; flex-shrink:0; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:16px; }
+.chat-send-btn:disabled { opacity:0.35; cursor:not-allowed; }
+.ask-ai-btn { display:flex; align-items:center; justify-content:center; gap:6px; background:var(--purple-dim); border:1px solid rgba(167,139,250,0.25); border-radius:12px; padding:8px 16px; cursor:pointer; font-size:13px; font-weight:700; color:var(--purple); width:100%; }
+
 </style>
 </head>
 <body>
 
 <!-- ══ LOADING ══ -->
+<!-- ══ AIチャット ポップアップ ══ -->
+<div class="chat-popup-overlay" id="chatOverlay" onclick="closeChatIfOutside(event)">
+  <div class="chat-popup" id="chatPopup">
+    <div class="chat-popup-handle"></div>
+    <div class="chat-popup-header">
+      <div class="chat-word-tag" id="chatWordTag">---</div>
+      <button class="chat-close-btn" onclick="closeChat()">✕</button>
+    </div>
+    <div class="chat-suggest" id="chatSuggest"></div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-row">
+      <textarea class="chat-input" id="chatInput" placeholder="質問を入力…" rows="1"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}"></textarea>
+      <button class="chat-send-btn" id="chatSendBtn" onclick="sendChat()">➤</button>
+    </div>
+  </div>
+</div>
+
 <div class="loading" id="loading">
   <div class="loading-ring"></div>
   <div class="loading-text" id="loadingMsg">データを読み込んでいます…</div>
@@ -493,6 +548,7 @@ body::before {
   </div>
 </div>
 <div class="confetti-wrap" id="confettiWrap"></div>
+
 
 <!-- ══ MENU SCREEN ══ -->
 <div class="screen active" id="menuScreen">
@@ -560,6 +616,9 @@ body::before {
     <button class="btn btn-bad"  onclick="judge(false)">← 復習</button>
     <button class="btn btn-skip" onclick="skipCard()">skip</button>
     <button class="btn btn-good" onclick="judge(true)">覚えた →</button>
+  </div>
+  <div style="padding:0 18px 14px;flex-shrink:0">
+    <button class="ask-ai-btn" onclick="openChat()">🤖 AIに質問する</button>
   </div>
 </div>
 
@@ -1229,6 +1288,89 @@ if ('serviceWorker' in navigator) {
     keys.forEach(key => caches.delete(key));
   });
 }
+
+// ── AIチャット ポップアップ ──
+let chatHistory = [], chatCurrentWord = null;
+const SUGGESTED = ["他の使い方を教えて","例文をもう1つ作って","似た意味の単語は？","反対の意味の単語は？","覚え方のコツを教えて"];
+
+function openChat() {
+  if (!queue[cur]) return;
+  const w = queue[cur];
+  // 単語が変わった場合のみリセット
+  if (!chatCurrentWord || chatCurrentWord.word !== w.word) {
+    chatCurrentWord = w;
+    chatHistory = [];
+    document.getElementById("chatMessages").innerHTML = "";
+    addBubble("ai", "「" + w.word + "」について何でも聞いてください！");
+  }
+  document.getElementById("chatWordTag").textContent = w.word + "  " + w.meaning;
+  document.getElementById("chatInput").value = "";
+  document.getElementById("chatSuggest").innerHTML =
+    SUGGESTED.map(q => '<button class="sq-btn" onclick="fillQ(this)">' + q + '</button>').join("");
+  document.getElementById("chatOverlay").classList.add("open");
+}
+
+function closeChat() {
+  document.getElementById("chatOverlay").classList.remove("open");
+}
+
+function closeChatIfOutside(e) {
+  if (e.target === document.getElementById("chatOverlay")) closeChat();
+}
+
+function fillQ(btn) {
+  document.getElementById("chatInput").value = btn.textContent;
+  document.getElementById("chatInput").focus();
+}
+
+function addBubble(role, text) {
+  const el = document.createElement("div");
+  el.className = "chat-bubble " + role;
+  el.textContent = text;
+  const msgs = document.getElementById("chatMessages");
+  msgs.appendChild(el);
+  msgs.scrollTop = msgs.scrollHeight;
+  return el;
+}
+
+async function sendChat() {
+  const input = document.getElementById("chatInput");
+  const btn   = document.getElementById("chatSendBtn");
+  const text  = input.value.trim();
+  if (!text || btn.disabled) return;
+  const w = chatCurrentWord;
+  input.value = ""; btn.disabled = true;
+  addBubble("user", text);
+  chatHistory.push({ role:"user", content:text });
+  const thinking = addBubble("thinking", "考え中…");
+  const system =
+    "あなたは中学生向けの英語の先生です。" +
+    "生徒は「" + w.word + "（意味：" + w.meaning + "）」を学習中です。" +
+    "この単語に関する質問に、中学生がわかりやすい日本語で簡潔に答えてください。" +
+    "例文は英語と日本語訳をセットで示し、3〜5文程度にまとめてください。";
+  try {
+    const messages = [
+      { role:"user",      content:"「" + w.word + "」について教えてください" },
+      { role:"assistant", content:"はい！「" + w.word + "」について答えます。" },
+      ...chatHistory
+    ];
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify({ model:"claude-haiku-4-5-20251001", max_tokens:500, system, messages })
+    });
+    const data = await res.json();
+    const reply = data.content.map(c => c.text||"").join("").trim();
+    thinking.remove();
+    addBubble("ai", reply);
+    chatHistory.push({ role:"assistant", content:reply });
+  } catch(e) {
+    thinking.textContent = "エラーが発生しました。もう一度お試しください。";
+    thinking.className = "chat-bubble ai";
+  }
+  btn.disabled = false;
+}
+
 init();
 </script>
 </body>

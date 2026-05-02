@@ -1,5 +1,5 @@
 // Service Worker - キャッシュ完全無効版
-const CACHE_NAME = "junior-vocab-v13";
+const CACHE_NAME = "junior-vocab-v15";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
