@@ -1354,17 +1354,17 @@ async function sendChat() {
       { role:"assistant", content:"はい！「" + w.word + "」について答えます。" },
       ...chatHistory
     ];
-    // Apps Scriptをプロキシとして使用（CORSとAPIキー問題を回避）
-    const res = await fetch("https://script.google.com/macros/s/AKfycbxnO18XjMkRQMm_FsGHcrUK3C8oaGESYd2kFaoGx3UpxtANVXFSns-QhUHMp3muCETs/exec", {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body:JSON.stringify({
-        word:    w.word,
-        meaning: w.meaning,
-        history: chatHistory.slice(0, -1), // 最後のユーザーメッセージを除いた履歴
-        message: text
-      })
+    // Apps ScriptプロキシにGETリクエストで送信（CORSを回避）
+    const params = new URLSearchParams({
+      word:    w.word,
+      meaning: w.meaning,
+      message: text,
+      history: JSON.stringify(chatHistory.slice(0, -1))
     });
+    const res = await fetch("https://script.google.com/macros/s/AKfycbxnO18XjMkRQMm_FsGHcrUK3C8oaGESYd2kFaoGx3UpxtANVXFSns-QhUHMp3muCETs/exec?" + params.toString(), {
+      method: "GET"
+    });
+    if (!res.ok) throw new Error("HTTP " + res.status);
     const data = await res.json();
     if (data.error) throw new Error(data.error);
     const reply = data.reply || "";
@@ -1372,8 +1372,9 @@ async function sendChat() {
     addBubble("ai", reply);
     chatHistory.push({ role:"assistant", content:reply });
   } catch(e) {
-    thinking.textContent = "エラーが発生しました。もう一度お試しください。";
+    thinking.textContent = "エラー詳細: " + (e.message || String(e));
     thinking.className = "chat-bubble ai";
+    console.error("Chat error:", e);
   }
   btn.disabled = false;
 }
