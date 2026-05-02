@@ -1354,13 +1354,20 @@ async function sendChat() {
       { role:"assistant", content:"はい！「" + w.word + "」について答えます。" },
       ...chatHistory
     ];
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
+    // Apps Scriptをプロキシとして使用（CORSとAPIキー問題を回避）
+    const res = await fetch("https://script.google.com/macros/s/AKfycbxnO18XjMkRQMm_FsGHcrUK3C8oaGESYd2kFaoGx3UpxtANVXFSns-QhUHMp3muCETs/exec", {
       method:"POST",
       headers:{ "Content-Type":"application/json" },
-      body:JSON.stringify({ model:"claude-haiku-4-5-20251001", max_tokens:500, system, messages })
+      body:JSON.stringify({
+        word:    w.word,
+        meaning: w.meaning,
+        history: chatHistory.slice(0, -1), // 最後のユーザーメッセージを除いた履歴
+        message: text
+      })
     });
     const data = await res.json();
-    const reply = data.content.map(c => c.text||"").join("").trim();
+    if (data.error) throw new Error(data.error);
+    const reply = data.reply || "";
     thinking.remove();
     addBubble("ai", reply);
     chatHistory.push({ role:"assistant", content:reply });
