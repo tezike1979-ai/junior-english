@@ -1245,7 +1245,7 @@ function speak(text) {
     const u = new SpeechSynthesisUtterance(text);
     u.lang   = "en-US";
     u.rate   = 0.82;
-    u.pitch  = 1.05;
+    u.pitch  = 1.25;
     u.volume = 1.0;
     if (cachedVoice) u.voice = cachedVoice;
     speechSynthesis.speak(u);
