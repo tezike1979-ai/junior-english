@@ -623,17 +623,16 @@ body::before {
 </div>
 
 <script>
-const SHEET_ID = "1GpdD2h-tGfhuFC92qjS1LRrujrFfFkz23VbvbcTL528";
 const PARTS_OF_SPEECH = [
-  { key:"noun",        name:"名詞",  en:"Noun",        gid:"0",          icon:"📦" },
-  { key:"pronoun",     name:"代名詞", en:"Pronoun",     gid:"973845469",  icon:"👤" },
-  { key:"verb",        name:"動詞",  en:"Verb",        gid:"997419758",  icon:"🏃" },
-  { key:"auxiliary",   name:"助動詞", en:"Auxiliary",   gid:"296755217",  icon:"🔧" },
-  { key:"adjective",   name:"形容詞", en:"Adjective",   gid:"1693781741", icon:"🎨" },
-  { key:"adverb",      name:"副詞",  en:"Adverb",      gid:"1924216966", icon:"⚡" },
-  { key:"preposition", name:"前置詞", en:"Preposition", gid:"1340365523", icon:"📍" },
-  { key:"conjunction", name:"接続詞", en:"Conjunction", gid:"931669290",  icon:"🔗" },
-  { key:"idiom",       name:"熟語",  en:"Idiom",       gid:"2096441416", icon:"💬", isIdiom:true },
+  { key:"noun",        name:"名詞",  en:"Noun", icon:"📦" },
+  { key:"pronoun",     name:"代名詞", en:"Pronoun", icon:"👤" },
+  { key:"verb",        name:"動詞",  en:"Verb", icon:"🏃" },
+  { key:"auxiliary",   name:"助動詞", en:"Auxiliary", icon:"🔧" },
+  { key:"adjective",   name:"形容詞", en:"Adjective", icon:"🎨" },
+  { key:"adverb",      name:"副詞",  en:"Adverb", icon:"⚡" },
+  { key:"preposition", name:"前置詞", en:"Preposition", icon:"📍" },
+  { key:"conjunction", name:"接続詞", en:"Conjunction", icon:"🔗" },
+  { key:"idiom",       name:"熟語",  en:"Idiom", icon:"💬", isIdiom:true },
 ];
 
 let wordsByPos = {}, allWords = [];
@@ -641,69 +640,6 @@ let queue = [], cur = 0, tapCount = 0;
 let knownN = 0, retryN = 0, currentMode = "", sessionTotal = 0;
 let stats = JSON.parse(localStorage.getItem("juniorVocabStats") || "{}");
 let currentTab = "all";
-
-function parseCSV(text, posKey) {
-  const posObj = PARTS_OF_SPEECH.find(p => p.key === posKey);
-  const isIdiom = posObj && posObj.isIdiom;
-
-  // ── クォート内の改行を正しく扱うため、文字単位でレコード分割 ──
-  function splitRecords(raw) {
-    const records = []; let cur = "", inQ = false;
-    for (let i = 0; i < raw.length; i++) {
-      const c = raw[i];
-      if (c === '"') {
-        // 連続する "" はエスケープされた引用符
-        if (inQ && raw[i+1] === '"') { cur += '"'; i++; continue; }
-        inQ = !inQ;
-      } else if ((c === '\n' || (c === '\r' && raw[i+1] === '\n')) && !inQ) {
-        if (c === '\r') i++; // CRLF スキップ
-        records.push(cur); cur = "";
-      } else {
-        cur += c;
-      }
-    }
-    if (cur.trim()) records.push(cur);
-    return records;
-  }
-
-  // ── 1レコード（行）をカラム配列に分解 ──
-  function splitCols(line) {
-    const cols = []; let buf = "", inQ = false;
-    for (let i = 0; i < line.length; i++) {
-      const c = line[i];
-      if (c === '"') {
-        if (inQ && line[i+1] === '"') { buf += '"'; i++; continue; }
-        inQ = !inQ;
-      } else if (c === ',' && !inQ) {
-        cols.push(buf.trim()); buf = "";
-      } else {
-        buf += c;
-      }
-    }
-    cols.push(buf.trim());
-    return cols;
-  }
-
-  const records = splitRecords(text);
-  return records.slice(1).map(line => {
-    if (!line.trim()) return null;
-    const cols = splitCols(line);
-    // A=番号, B=単語/熟語, C=意味, D=例文(英), E=日本語訳
-    let word, meaning, exEn = "", exJa = "";
-    if (cols.length >= 3 && !isNaN(cols[0]) && cols[0] !== "") {
-      word = cols[1] || ""; meaning = cols[2] || "";
-      exEn = cols[3] || ""; exJa = cols[4] || "";  // 全品詞で読み込む
-    } else {
-      word = cols[0] || ""; meaning = cols[1] || "";
-      exEn = cols[2] || ""; exJa = cols[3] || "";  // 全品詞で読み込む
-    }
-    // セル内改行（\n）をスペースに変換して1行に整形
-    meaning = meaning.replace(/\n/g, ' / ');
-    exEn    = exEn.replace(/\n/g, ' ');
-    exJa    = exJa.replace(/\n/g, ' ');
-    return word ? { word, meaning, pos: posKey, exEn, exJa } : null;
-  }).filter(Boolean);
-}
 
 // words.json から読み込み（Safariのクロスオリジン問題を回避）
 async function loadAll() {
